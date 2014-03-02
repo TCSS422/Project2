@@ -1,5 +1,10 @@
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+#if !defined(NULL)
+    #define NULL ((void*)0)
+#endif
 
 #define NUM_THREADS 50
 
