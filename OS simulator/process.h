@@ -35,11 +35,12 @@ typedef int INSTRUCTION;
 #define NUM_INSTRUCTIONS 10000
 
 // instructions
-#define INSTRUCTION_IO 				0
+#define INSTRUCTION_OUTPUT 			0		// Input is handled by interrupts, this is output only
 #define INSTRUCTION_MUTEX_LOCK 		1
 #define INSTRUCTION_MUTEX_UNLOCK 	2
-#define INSTRUCTION_COND_WAIT 		3
-#define INSTRUCTION_COND_SIGNAL 	4
+#define INSTRUCTION_INC_SHARED_MEM 	3		// Increments a shared memory location (signals all processes blocking)
+#define INSTRUCTION_DEC_SHARED_MEM 	4		// Decrements a shared memory location (blocks if already 0)
+#define INSTRUCTION_NOP				5		// stands in for all other instructions (ADD, normal memory access, etc...)
 
 // states
 #define RUNNING 	0
