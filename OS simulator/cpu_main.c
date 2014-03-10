@@ -21,6 +21,7 @@
 
 // Note that keyboard is device 0
 #define NUM_DEVICES 2
+#define KB_DEVICE 0
 #define NUM_MUTEXES 3
 #define NUM_SHARED_MEM_LOCS 4
 #define BLOCK_QUEUE_LENGTH 10
@@ -40,7 +41,23 @@
 #define KEYBOARD_INTERRUPT 2
 #define IO_INTERRUPT 4
 
+// Holds which interrupts have been activated
 int global_interrupt_state;
+
+// Global signal to all threads - if it's FALSE then everybody should wrap things up and exit
+int global_run_state;
+
+// Mutex so we don't modify interrupts in the process of handling them
+pthread_mutex_t interrupt_mutex;
+
+// Timer device
+void* timer_interrupt();
+
+// Keyboard device
+void* kb_interrupt();
+
+// IO device
+void* io_interrupt();
 
 int main(int argc, char * argv[])
 {
@@ -50,6 +67,8 @@ int main(int argc, char * argv[])
 
 	PCBStr ** all_pcbs;
 	int run_scheduler = 0;
+
+	global_run_state = TRUE;
 
 	// Initialize blocked-process queue for devices
 	queue process_blocked_on_devices[NUM_DEVICES];
@@ -76,13 +95,11 @@ int main(int argc, char * argv[])
 		buildQueue(BLOCK_QUEUE_LENGTH, processes_blocked_on_shared_mem[i]);
 	}
 
-	while(RUN) {
+	while(TRUE) {
 
 		// sources of interrupts: timer, I/O devices, system calls
 
 		while (global_interrupt_state == 0 && current_pcb->state == RUNNING) {
-			// increment pc
-			current_pcb->next_step = (current_pcb->next_step + 2) % current_process->no_steps;
 
 			// read instruction
 			int instruction = current_process->requests[current_pcb->next_step];
@@ -96,6 +113,12 @@ int main(int argc, char * argv[])
 				current_pcb->state = BLOCKED;
 				// We need to add ourselves to the queue for the device:
 				addToEnd(process_blocked_on_devices[argument], current_pcb->pid);
+				// If we're not waiting on a keyboard input, then fire up a one-shot thread that will
+				// fire an interrupt back after a short time.
+				if (argument != KB_DEVICE)
+				{
+					pthread_create(NULL, NULL, io_interrupt, NULL);
+				}
 				break;
 			case INSTRUCTION_MUTEX_LOCK:
 				// Take the mutex:
@@ -159,11 +182,18 @@ int main(int argc, char * argv[])
 			default:
 				printf("Illegal instruction\n");
 			}
+
+			// If we didn't just block, then increment PC to next instruction. We're doing this at the end to make
+			// sure we don't skip over blocked instructions when we come back to them.
+			if (current_pcb->state != BLOCKED)
+				// increment pc
+				current_pcb->next_step = (current_pcb->next_step + 2) % current_process->no_steps;
 		}
 
 		// handle interrupts
 		// =================
 
+		pthread_mutex_lock(interrupt_mutex);
 		// bitmask on timer interrupt
 		if (global_interrupt_state & TIMER_INTERRUPT)
 		{
@@ -189,7 +219,7 @@ int main(int argc, char * argv[])
 		if (global_interrupt_state & IO_INTERRUPT)
 		{
 			global_interrupt_state -= IO_INTERRUPT;
-			printf("IO device interrupt received!\n")
+			printf("IO device interrupt received!\n");
 			// Find the next process waiting on the IO device
 			int waiting_process = getFirstItem(process_blocked_on_devices[1]);
 			// and wake it up...
@@ -205,5 +235,46 @@ int main(int argc, char * argv[])
 			// current_pcb = newly_scheduled_pcb;
 			// current_process = newly_scheduled_process;
 		}
+		pthread_mutex_unlock(interrupt_mutex);
 	}
+}
+
+// Timer interrupt thread function - sleep for one half second, set timer interrupt on, repeat as long as global
+// run state is true.
+// TODO: pass in defined sleep time
+void timer_interrupt()
+{
+	while(global_run_state == TRUE)
+	{
+		usleep(500000);
+		pthread_mutex_lock(interrupt_mutex);
+		if (!(global_interrupt_state & TIMER_INTERRUPT))
+			global_interrupt_state += TIMER_INTERRUPT;
+		pthread_mutex_unlock(interrupt_mutex);
+	}
+}
+
+// Keyboard interrupt thread function - whenever the user types a key, set keyboard interrupt on, repeat as long
+// as global run state is true
+void kb_interrupt()
+{
+	while(global_run_state == TRUE)
+	{
+		getch();
+		pthread_mutex_lock(interrupt_mutex);
+		if (!(global_interrupt_state & KEYBOARD_INTERRUPT))
+			global_interrupt_state += KEYBOARD_INTERRUPT;
+		pthread_mutex_unlock(interrupt_mutex);
+	}
+}
+
+// This one is a bit different... instead of looping forever, we fire up a new instance of this thread whenever
+// we need to wait for an i/o interrupt.
+void io_interrupt()
+{
+	usleep(100000);
+	pthread_mutex_lock(interrupt_mutex);
+	if (!(global_interrupt_state & IO_INTERRUPT))
+		global_interrupt_state += IO_INTERRUPT;
+	pthread_mutex_unlock(interrupt_mutex);
 }
