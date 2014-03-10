@@ -18,6 +18,7 @@
 
 #define NUM_DEVICES 2
 #define NUM_MUTEXES 3
+#define NUM_SHARED_MEM_LOCS 4
 #define BLOCK_QUEUE_LENGTH 10
 
 #define NOBODY_HOLDS_MUTEX -1
@@ -25,23 +26,35 @@
 
 int main(int argc, char * argv[])
 {
+	// TODO: this is temporary, just to have placeholders for
 	PCBStr * current_pcb;
 	ProcessStr * current_process;
 
 	PCBStr ** all_pcbs;
 
+	// Initialize blocked-process queue for devices
 	queue process_blocked_on_devices[NUM_DEVICES];
 	for (int i = 0; i < NUM_DEVICES; i++)
 	{
 		buildQueue(BLOCK_QUEUE_LENGTH, process_blocked_on_devices[i]);
 	}
 
+	// Initialize mutexes and blocked-process queue for mutexes
 	int mutexes[NUM_MUTEXES];		// keeps track of current mutex holder, -1 = nobody
 	queue processes_blocked_on_mutexes[NUM_MUTEXES];	// keeps track of who's waiting to grab a mutex
 	for (int i = 0; i < NUM_MUTEXES; i++)
 	{
-		mutexes[i] = -1;
+		mutexes[i] = NOBODY_HOLDS_MUTEX;
 		buildQueue(BLOCK_QUEUE_LENGTH, processes_blocked_on_mutexes[i]);
+	}
+
+	// Initialize shared memory locations and blocked-process queue for same
+	int shared_mem[NUM_SHARED_MEM_LOCS];
+	queue processes_blocked_on_shared_mem[NUM_SHARED_MEM_LOCS];
+	for (int i = 0; i < NUM_SHARED_MEM_LOCS; i++)
+	{
+		shared_mem[i] = 0;	// all shared memory will start at zero
+		buildQueue(BLOCK_QUEUE_LENGTH, processes_blocked_on_shared_mem[i]);
 	}
 
 	while(RUN) {
@@ -96,14 +109,30 @@ int main(int argc, char * argv[])
 				break;
 			case INSTRUCTION_INC_SHARED_MEM:
 				// If shared memory location is zero:
-				//   Notify all other waiting processes (turn them from BLOCKED to READY)
-				// Increment shared memory location
+				//   Notify first process in wait queue
+				if (shared_mem[argument] == 0)
+				{
+					int waiting_process = getFirstItem(processes_blocked_on_shared_mem[argument]);
+					// and wake them up...
+					all_pcbs[waiting_process]->state = RUNNING;
+				}
+				// Actually increment the memory location
+				shared_mem[argument]++;
 				break;
 			case INSTRUCTION_DEC_SHARED_MEM:
 				// If shared memory location is zero:
 				//   Block and wait
 				// If shared memory is not zero:
 				//	 Decrement and continue
+				if (shared_mem[argument] == 0)
+				{
+					current_pcb->state = BLOCKED;
+					addToEnd(processes_blocked_on_shared_mem[argument], current_pcb->pid);
+				}
+				else
+				{
+					shared_mem[argument]--;
+				}
 				break;
 			case INSTRUCTION_NOP:
 				// Do nothing
