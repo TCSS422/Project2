@@ -6,13 +6,42 @@
  *      Author: Group10
  */
 
+/*
+ *	Dawn Rocks
+ *	Maya Osbourne
+ *	Mike Baxter Peter Pentescu
+ *
+ *	TCSS422 Operating Systems
+ *	Project 2 - Simulated OS
+ */
+
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <process.h>
 #include <unistd.h>
 #include <queue.h>
+#include<string.h>
 
+//used to cross compile between win and unix based system commands
+#ifdef _WIN32
+	#define CLEAR system("cls")
+	#define FLUSH fflush(stdin)
+	#define SLEEP system("PAUSE")
+
+#else
+	#define CLEAR system("clear")
+	#define FLUSH draino()
+	#define SLEEP  getchar()
+
+#endif
+
+
+void draino(void)
+{
+	char c;
+	while( (c=fgetc(stdin)) !='\n' ) ;
+}
 #define TRUE 1
 #define FALSE 0
 
@@ -41,6 +70,19 @@
 #define KEYBOARD_INTERRUPT 2
 #define IO_INTERRUPT 4
 
+// total number of processes
+int num_processes;
+
+// total number of producer consumer processes
+int num_pc_processes;
+//total number of i/o processes
+int num_io_processes;
+//total number of keyboard processes
+int num_keyboard_processes;
+//total number of compute processes(total processes - all the other input processes)
+int num_compute_processes;
+//scheduler selection at prompt
+int scheduler_choice;		// 1 round robin 2 lottery 3 priority - possibly change to an enum
 // Holds which interrupts have been activated
 int global_interrupt_state;
 
@@ -50,6 +92,8 @@ int global_run_state;
 // Mutex so we don't modify interrupts in the process of handling them
 pthread_mutex_t interrupt_mutex;
 
+
+
 // Timer device
 void* timer_interrupt();
 
@@ -58,6 +102,8 @@ void* kb_interrupt();
 
 // IO device
 void* io_interrupt();
+
+void* get_input();
 
 int main(int argc, char * argv[])
 {
@@ -69,6 +115,10 @@ int main(int argc, char * argv[])
 	int run_scheduler = 0;
 
 	global_run_state = TRUE;
+
+	// Start up our devices.
+	pthread_create(NULL, NULL, timer_interrupt, NULL);
+	pthread_create(NULL, NULL, kb_interrupt, NULL);
 
 	// Initialize blocked-process queue for devices
 	queue process_blocked_on_devices[NUM_DEVICES];
@@ -237,6 +287,47 @@ int main(int argc, char * argv[])
 		}
 		pthread_mutex_unlock(interrupt_mutex);
 	}
+}
+
+//prompts for information to start the simulated operating system
+//need to get total number of processes, number of keyboard processes, number of I/O bound processes and PC processes
+//remaining will be compute bound
+void get_input()
+{
+	num_compute_processes = 0;
+	while(num_compute_processes < 1)
+	{
+		CLEAR;
+		FLUSH;
+			printf("\n Please enter total number of processes to run: ");
+			scanf("%d", &num_processes);
+			FLUSH;
+			num_compute_processes = num_processes;
+			printf("\n Please enter total number of keyboard processes to run: ");
+			scanf("%d", &num_keyboard_processes);
+			FLUSH;
+			num_compute_processes = num_processes - num_keyboard_processes;
+			printf("\n Please enter total number of I/O bound processes to run: ");
+			scanf("%d", &num_io_processes);
+			FLUSH;
+			num_compute_processes = num_processes - num_io_processes;
+			printf("\n Please enter total number of p/c processes to run: ");
+			scanf("%d", &num_pc_processes);
+			num_compute_processes = num_processes - num_pc_processes;
+			FLUSH;
+			printf("\n Please select the scheduling algorithm to use: ");
+			printf("\n 1. Round Robin");
+			printf("\n 2. Lottery");
+			printf("\n 3. Priority");
+			scanf("%d", &scheduler_choice);	//can possibly do an enum here.
+			if(num_compute_processes < 1)
+			{
+				printf("\n ERROR! You did not enter enough total processes. Please re-enter process information. ");
+			}
+	}
+
+
+
 }
 
 // Timer interrupt thread function - sleep for one half second, set timer interrupt on, repeat as long as global
