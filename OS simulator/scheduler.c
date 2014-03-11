@@ -7,9 +7,11 @@
  *	Project 2 - Simulated OS
  */
 
+#include <process.h>
 
 
-int PriorityScheduler(int process_array[][], int num_processes)
+
+int PriorityScheduler(PCBStr ** all_pcbs, int num_processes)
 {
 	//Priority can be descided based on memory requirements, time requirements or other
 	//resource retirement
@@ -26,7 +28,7 @@ int PriorityScheduler(int process_array[][], int num_processes)
 }
 
 //This one uses a queue
-int RoundRobinScheduler(queue the_queue, int num_processes)
+int RoundRobinScheduler(PCBStr ** all_pcbs, int num_processes)
 {
 	int i = 0;
 	int quantum; 	//decide on a quantum number
@@ -39,7 +41,7 @@ int RoundRobinScheduler(queue the_queue, int num_processes)
 
 }
 
-int LotteryScheduler(int process_array[][], int num_processes)
+int LotteryScheduler(PCBStr ** all_pcbs, int num_processes)
 {
 
 	int i = 0;
