@@ -5,6 +5,7 @@
  *      Author: George Mobus (http://faculty.washington.edu/gmobus/Academics/TCSS422/MoodleFiles/Project2.html)
  *      		Group10
  *
+ *      		testing 123
  */
 
 #ifndef PROCESS_H_
@@ -29,6 +30,7 @@ typedef struct pcb_str {
 	int waiting_on;		// which queue is it in if it is waiting on something (blocked)
 	int owns;			// which mutex lock does it own
 	// anything else you need
+	int priority;		//priority for scheduling
 } PCBStr;
 
 typedef int INSTRUCTION;
