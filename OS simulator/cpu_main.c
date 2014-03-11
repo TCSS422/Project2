@@ -231,6 +231,7 @@ int main(int argc, char * argv[])
 				break;
 			default:
 				printf("Illegal instruction\n");
+				break;
 			}
 
 			// If we didn't just block, then increment PC to next instruction. We're doing this at the end to make
