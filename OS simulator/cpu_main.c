@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <queue.h>
 #include<string.h>
+#include scheduler
 
 //used to cross compile between win and unix based system commands
 #ifdef _WIN32
@@ -88,6 +89,10 @@ int global_interrupt_state;
 
 // Global signal to all threads - if it's FALSE then everybody should wrap things up and exit
 int global_run_state;
+
+PCBStr pcb_to_run; //PCB returned from scheduler to run.
+
+
 
 // Mutex so we don't modify interrupts in the process of handling them
 pthread_mutex_t interrupt_mutex;
@@ -285,6 +290,26 @@ int main(int argc, char * argv[])
 			// SCHEDULER MAGIC...
 			// current_pcb = newly_scheduled_pcb;
 			// current_process = newly_scheduled_process;
+
+			// 1 round robin 2 lottery 3 priority - possibly change to an enum
+			switch(scheduler_choice)
+			{
+			case 1:
+				pcb_to_run = RoundRobinScheduler(all_pcbs, num_processes, current_pcb);
+				break;
+			case 2:
+				pcb_to_run = LotteryScheduler(all_pcbs, num_processes, current_pcb);
+				break;
+			case 3:
+				pcb_to_run = PriorityScheduler(all_pcbs, num_processes, current_pcb);
+				break;
+			default
+				System.out.println("Bad selection!");
+				break;
+			}
+
+			//do something with pcb_to_run?
+
 		}
 		pthread_mutex_unlock(interrupt_mutex);
 	}
