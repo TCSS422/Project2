@@ -175,6 +175,7 @@ int main(int argc, char * argv[])
 	}
 
 	while (TRUE) {
+		usleep(100000); // Run 10 steps/second, slowed down enough to be capable of human comprehension
 		printf("whoop whoop");
 		// sources of interrupts: timer, I/O devices, system calls
 
@@ -368,7 +369,7 @@ void timer_interrupt()
 	while(global_run_state == TRUE)
 	{
 		printf("TICK TOCK MOTHAFUCKA\n");
-		usleep(500000);
+		usleep(5000000);	// 5 seconds
 		pthread_mutex_lock(&interrupt_mutex);
 		if (!(global_interrupt_state & TIMER_INTERRUPT))
 			global_interrupt_state += TIMER_INTERRUPT;
@@ -396,7 +397,7 @@ void kb_interrupt()
 // we need to wait for an i/o interrupt.
 void io_interrupt()
 {
-	usleep(100000);
+	usleep(1000000);	// 1 second
 	pthread_mutex_lock(&interrupt_mutex);
 	if (!(global_interrupt_state & IO_INTERRUPT))
 		global_interrupt_state += IO_INTERRUPT;
