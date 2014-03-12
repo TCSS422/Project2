@@ -30,7 +30,8 @@ typedef struct pcb_str {
 	int waiting_on;		// which queue is it in if it is waiting on something (blocked)
 	int owns;			// which mutex lock does it own
 	// anything else you need
-	int priority;		//priority for scheduling
+	int priority;		// priority rankings for scheduling, e.g. 3=io-keyboard (tasks),
+						// 2=producer-consumer (memory mgmt) , 1=calculator (background)
 } PCBStr;
 
 typedef int INSTRUCTION;
