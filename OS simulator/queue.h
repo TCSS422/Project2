@@ -11,7 +11,12 @@
 typedef struct {
 	int position;
 	int size;
-	int* data[];
+	int* data;
 } queue;
+
+void buildQueue(int newsize, queue newQueue);
+int addToEnd(queue target, int newData);
+int getFirstItem(queue target);
+int destroyQueue(queue target);
 
 #endif /* QUEUE_H_ */

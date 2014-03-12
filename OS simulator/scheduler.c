@@ -1,87 +1,73 @@
 /*
- *	Dawn Rocks
- *	Maya Osbourne
- *	Mike Baxter Peter Pentescu
+ * MikesScheduler.c
  *
- *	TCSS422 Operating Systems
- *	Project 2 - Simulated OS
+ *  Created on: Mar 11, 2014
+ *      Author: mike
  */
 
-#include <process.h>
+#include "process.h"
+#include "scheduler.h"
+#include <stdlib.h>
 
-
-
-PCBStr PriorityScheduler(PCBStr ** all_pcbs, int num_processes, int current_pcb)
+int scheduler(int sched_policy, PCBStr ** all_pcbs, int num_processes, int curr_process)
 {
-	//Priority can be decided based on memory requirements, time requirements or other
-	//resource retirement
-	int i = 0;
-	PCBStr pcbToRun;
-	int maxPriority;
-
-
-	for(i = 0; i < num_processes; i ++)
+	switch(sched_policy)
 	{
-		//for loop through the table - find the max priority
-		if(all_pcbs[i]->priority > maxPriority && i != current_pcb)
-		{
-			maxPriority = all_pcbs[i]->priority;
-			pcbToRun = all_pcbs[i];
-		}
+	case 1:
+		return RoundRobinScheduler(all_pcbs, num_processes, curr_process);
+		break;
+	case 2:
+		return LotteryScheduler(num_processes);
+		break;
+	case 3:
+		return PriorityScheduler(all_pcbs, num_processes, curr_process);
+		break;
 	}
-	//Take care of highest priority first, if multiple with same, take care of
-	// on a first come first serve basis
-	return pcbToRun;
+	return 0; // shouldn't ever get here
 }
 
-//This one uses a queue
-PCBStr RoundRobinScheduler(PCBStr ** all_pcbs, int num_processes, int current_pcb)
+int PriorityScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process)
 {
-	PCBStr pcbToRun;
-	int i = 0;
-	int quantum = ; 	//decide on a quantum number
+	int i;
+	int maxPriority = -1;
+	int nextProcess = -1;
 
-	//allow process to run while quantum time is still going
-
-	//when quantum time is up -
-	//if process is done before time is up then be done with that process
-	//else add back to the end of the list and run the next, repeat(while loop)
-	return pcbToRun;
-}
-
-PCBStr LotteryScheduler(PCBStr ** all_pcbs, int num_processes, int current_pcb)
-{
-
-	PCBStr pcbToRun;
-	int i = 0;
-	int o = 0;
-	int j = 0;
-	int winningPcb;
-	int totalTickets = 0;
-	int * lotteryArray;
-	int rand;
-	for(j = 0; j < num_processes; j++)
-	{
-		totalTickets += all_pcbs[j]->priority;
-	}
-	lotteryArray = (PCBStr *)malloc(sizeof(PCBStr)) * totalTickets;
-	rand = rand_r(totalTickets);
-	//need to figure out priority for processes and who gets what amount of tickets.
-	// make lottery table
-	j = 0;
 	for(i = 0; i < num_processes; i++)
 	{
-		// go through each process and assign a lottery ticket for each priority level(priority of X would recieve X amount of tickets)
-		//add to lottery table
-		for(o = 0; o < all_pcbs[i]->priority; o++)
+		// Check against current process so that same high priority process
+		// doesn't indefinitely. The next high priority process will get a turn,
+		// or a lower priority process will.
+		if (all_pcbs[i] -> priority > maxPriority && i != curr_process)
 		{
-			lotteryArray[j] = all_pcbs[i];
-			j++;
+			maxPriority = all_pcbs[i] -> priority;
+			nextProcess = i;
 		}
 	}
+	return nextProcess;
+}
 
-	winningPcb = lotteryArray[rand];
-	free(lotteryArray);
-	 //do a rand() based on the total tickets and pick winner
-	return pcbToRun;
+int RoundRobinScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process)
+{
+	int front = 0;
+	int tail = num_processes - 1;
+	int head = curr_process;
+
+	head++; // advance head, wrap around if necessary
+	if (head > tail) {
+		head = front;
+	}
+	// if nothing else, calculator process will always be READY
+	while (all_pcbs[head] -> state != READY) {
+		head++;
+		if (head > tail) {
+			head = front;
+		}
+	}
+	return head;
+}
+
+int LotteryScheduler(int num_processes)
+{
+	// this seems too easy, but we'll take it
+	return rand() % num_processes - 1;
 }

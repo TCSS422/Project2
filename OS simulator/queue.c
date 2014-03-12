@@ -7,7 +7,8 @@
  *  A queue of ints.
  */
 
-#include <queue.h>
+#include "queue.h"
+#include <stdlib.h>
 
 // basically a constructor:
 void buildQueue(int newsize, queue newQueue){
@@ -31,7 +32,7 @@ int getFirstItem(queue target)
 {
 	if (target.position >= 0)
 	{
-		int returndata = target[0];
+		int returndata = target.data[0];
 		target.position--;
 		for (int i = 0; i < target.size; i++)
 		{
@@ -47,5 +48,6 @@ int destroyQueue(queue target)
 {
 	target.position = -1;
 	target.size = -1;
-	return free(target.data);
+	free(target.data);
+	return 0;
 }

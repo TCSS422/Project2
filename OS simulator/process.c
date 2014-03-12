@@ -5,10 +5,10 @@
  *      Author: Group10
  */
 
-#include <process.h>
+#include "process.h"
 
 #define N 15
-
+/*
 char * getProcess(int val)
 {
 	char type[N];
@@ -58,3 +58,4 @@ char * getState(int val)
 	}
 	return type;
 }
+*/

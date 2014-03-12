@@ -18,12 +18,12 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <process.h>
+#include "process.h"
 #include <unistd.h>
-#include <queue.h>
-#include<string.h>
-#include scheduler
-
+#include "queue.h"
+#include <string.h>
+#include "scheduler.h"
+#include <termios.h>
 //used to cross compile between win and unix based system commands
 #ifdef _WIN32
 	#define CLEAR system("cls")
@@ -88,7 +88,7 @@ int scheduler_choice;		// 1 round robin 2 lottery 3 priority - possibly change t
 int global_interrupt_state;
 
 // Global signal to all threads - if it's FALSE then everybody should wrap things up and exit
-int global_run_state;
+int global_run_state = TRUE;
 
 PCBStr pcb_to_run; //PCB returned from scheduler to run.
 
@@ -100,15 +100,18 @@ pthread_mutex_t interrupt_mutex;
 
 
 // Timer device
-void* timer_interrupt();
+void timer_interrupt();
+void* timer_interrupt_fp = (*timer_interrupt);
 
 // Keyboard device
-void* kb_interrupt();
+void kb_interrupt();
+void* kb_interrupt_fp = (*kb_interrupt);
 
 // IO device
-void* io_interrupt();
+void io_interrupt();
+void* io_interrupt_fp = (*io_interrupt);
 
-void* get_input();
+void get_input();
 
 int main(int argc, char * argv[])
 {
@@ -119,11 +122,30 @@ int main(int argc, char * argv[])
 	PCBStr ** all_pcbs;
 	int run_scheduler = 0;
 
-	global_run_state = TRUE;
+	pthread_mutexattr_t default_mutex_attr;
+
+	pthread_mutexattr_init(&default_mutex_attr);
+	pthread_mutex_init(&interrupt_mutex, &default_mutex_attr);
+
+	pthread_t timer_thread;
+	pthread_t kb_thread;
+
+	// Set up keyboard input for zero delay
+	// Code blatantly copied from google because terminal stuff is black magic
+	//struct termios info;
+	//	tcgetattr(0, &info);          /* get current terminal attirbutes; 0 is the file descriptor for stdin*/
+	//	info.c_lflag &= ~ICANON;      /* disable canonical mode*/
+	//	info.c_cc[VMIN] = 1;          /* wait until at least one keystroke available*/
+	//	info.c_cc[VTIME] = 0;         /* no timeout*/
+	//	tcsetattr(0, TCSANOW, &info); /* set immediately*/
+	// end copy paste job
 
 	// Start up our devices.
-	pthread_create(NULL, NULL, timer_interrupt, NULL);
-	pthread_create(NULL, NULL, kb_interrupt, NULL);
+	printf("Creating timer pthread\n");
+	pthread_create(&timer_thread, NULL, timer_interrupt_fp, NULL);
+	printf("Creating kb pthread\n");
+	pthread_create(&kb_thread, NULL, kb_interrupt_fp, NULL);
+	printf("OK, created some threads...\n");
 
 	// Initialize blocked-process queue for devices
 	queue process_blocked_on_devices[NUM_DEVICES];
@@ -131,6 +153,7 @@ int main(int argc, char * argv[])
 	{
 		buildQueue(BLOCK_QUEUE_LENGTH, process_blocked_on_devices[i]);
 	}
+	printf("OK, created the device blocking queue");
 
 	// Initialize mutexes and blocked-process queue for mutexes
 	int mutexes[NUM_MUTEXES];		// keeps track of current mutex holder, -1 = nobody
@@ -140,6 +163,7 @@ int main(int argc, char * argv[])
 		mutexes[i] = NOBODY_HOLDS_MUTEX;
 		buildQueue(BLOCK_QUEUE_LENGTH, processes_blocked_on_mutexes[i]);
 	}
+	printf("OK, created the mutex blocking queue");
 
 	// Initialize shared memory locations and blocked-process queue for same
 	int shared_mem[NUM_SHARED_MEM_LOCS];
@@ -150,8 +174,8 @@ int main(int argc, char * argv[])
 		buildQueue(BLOCK_QUEUE_LENGTH, processes_blocked_on_shared_mem[i]);
 	}
 
-	while(TRUE) {
-
+	while (TRUE) {
+		printf("whoop whoop");
 		// sources of interrupts: timer, I/O devices, system calls
 
 		while (global_interrupt_state == 0 && current_pcb->state == RUNNING) {
@@ -172,7 +196,8 @@ int main(int argc, char * argv[])
 				// fire an interrupt back after a short time.
 				if (argument != KB_DEVICE)
 				{
-					pthread_create(NULL, NULL, io_interrupt, NULL);
+					pthread_t temp_input_thread;
+					pthread_create(&temp_input_thread, NULL, io_interrupt, NULL);
 				}
 				break;
 			case INSTRUCTION_MUTEX_LOCK:
@@ -249,7 +274,7 @@ int main(int argc, char * argv[])
 		// handle interrupts
 		// =================
 
-		pthread_mutex_lock(interrupt_mutex);
+		pthread_mutex_lock(&interrupt_mutex);
 		// bitmask on timer interrupt
 		if (global_interrupt_state & TIMER_INTERRUPT)
 		{
@@ -287,31 +312,10 @@ int main(int argc, char * argv[])
 		if (run_scheduler || current_pcb->state == BLOCKED)
 		{
 			run_scheduler = FALSE;
-			// SCHEDULER MAGIC...
-			// current_pcb = newly_scheduled_pcb;
-			// current_process = newly_scheduled_process;
-
-			// 1 round robin 2 lottery 3 priority - possibly change to an enum
-			switch(scheduler_choice)
-			{
-			case 1:
-				pcb_to_run = RoundRobinScheduler(all_pcbs, num_processes, current_pcb);
-				break;
-			case 2:
-				pcb_to_run = LotteryScheduler(all_pcbs, num_processes, current_pcb);
-				break;
-			case 3:
-				pcb_to_run = PriorityScheduler(all_pcbs, num_processes, current_pcb);
-				break;
-			default
-				System.out.println("Bad selection!");
-				break;
-			}
-
-			//do something with pcb_to_run?
+			pcb_to_run = * all_pcbs[scheduler(scheduler_choice, all_pcbs, num_processes, current_pcb->pid)];
 
 		}
-		pthread_mutex_unlock(interrupt_mutex);
+		pthread_mutex_unlock(&interrupt_mutex);
 	}
 }
 
@@ -363,11 +367,13 @@ void timer_interrupt()
 {
 	while(global_run_state == TRUE)
 	{
+		printf("TICK TOCK MOTHAFUCKA\n");
 		usleep(500000);
-		pthread_mutex_lock(interrupt_mutex);
+		pthread_mutex_lock(&interrupt_mutex);
 		if (!(global_interrupt_state & TIMER_INTERRUPT))
 			global_interrupt_state += TIMER_INTERRUPT;
-		pthread_mutex_unlock(interrupt_mutex);
+		pthread_mutex_unlock(&interrupt_mutex);
+
 	}
 }
 
@@ -377,11 +383,12 @@ void kb_interrupt()
 {
 	while(global_run_state == TRUE)
 	{
-		getch();
-		pthread_mutex_lock(interrupt_mutex);
+		getchar();	// Blocks when there is no input
+		pthread_mutex_lock(&interrupt_mutex);
 		if (!(global_interrupt_state & KEYBOARD_INTERRUPT))
 			global_interrupt_state += KEYBOARD_INTERRUPT;
-		pthread_mutex_unlock(interrupt_mutex);
+		pthread_mutex_unlock(&interrupt_mutex);
+		printf("WHY YOU GOTTA TYPE LIKE THAT?");
 	}
 }
 
@@ -390,8 +397,8 @@ void kb_interrupt()
 void io_interrupt()
 {
 	usleep(100000);
-	pthread_mutex_lock(interrupt_mutex);
+	pthread_mutex_lock(&interrupt_mutex);
 	if (!(global_interrupt_state & IO_INTERRUPT))
 		global_interrupt_state += IO_INTERRUPT;
-	pthread_mutex_unlock(interrupt_mutex);
+	pthread_mutex_unlock(&interrupt_mutex);
 }
