@@ -121,8 +121,7 @@ int main(int argc, char * argv[])
 
 	PCBStr ** all_pcbs;
 
-	// +1 for calculator
-	int total_processes = num_keyboard_processes + num_io_processes + (2 * num_pc_processes) + 1;
+	int total_processes = num_keyboard_processes + num_io_processes + (2 * num_pc_processes) + num_compute_processes;
 
 	// initialize process table
 	all_pcbs = (PCBStr **)malloc(total_processes * sizeof(PCBStr *));
