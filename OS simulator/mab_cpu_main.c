@@ -83,7 +83,7 @@ int num_keyboard_processes;
 //total number of compute processes(total processes - all the other input processes)
 int num_compute_processes;
 //scheduler selection at prompt
-int scheduler_choice = 0;		// 1 round robin 2 lottery 3 priority - possibly change to an enum
+int scheduler_choice;		// 1 round robin 2 lottery 3 priority - possibly change to an enum
 // Holds which interrupts have been activated
 int global_interrupt_state = 0;
 
@@ -338,10 +338,13 @@ int main(int argc, char * argv[])
 			global_interrupt_state -= KEYBOARD_INTERRUPT;
 			printf("Keyboard interrupt received!\n");
 			// Wake up the next process waiting on the keyboard
-			int waiting_process = getFirstItem(process_blocked_on_devices[0]);
-			// and wake it up... (note that we aren't immediately running the scheduler, it just is
-			// eligible to be scheduled!)
-			all_pcbs[waiting_process]->state = RUNNING;
+			if (process_blocked_on_devices[0].position != -1)
+			{
+				int waiting_process = getFirstItem(process_blocked_on_devices[0]);
+				// and wake it up... (note that we aren't immediately running the scheduler, it just is
+				// eligible to be scheduled!)
+				all_pcbs[waiting_process]->state = RUNNING;
+			}
 		}
 
 		// bitmask on IO interrupt
@@ -377,25 +380,28 @@ void get_input()
 		printf("\n Please enter total number of keyboard processes to run: ");
 		scanf("%i", &num_keyboard_processes);
 		printf("%i", num_keyboard_processes);
-
+		FLUSH;
 		num_compute_processes = num_compute_processes - num_keyboard_processes;
 		printf("\n Please enter total number of I/O bound processes to run: ");
 		scanf("%i", &num_io_processes);
 		printf("%i", num_io_processes);
-
+		FLUSH;
 		num_compute_processes = num_compute_processes - num_io_processes;
 		printf("\n Please enter total number of p/c processes to run: ");
 		scanf("%i", &num_pc_processes);
-		printf("%i", num_pc_processes);
-
+		FLUSH;
 		num_compute_processes = num_compute_processes - num_pc_processes;
+		scheduler_choice = 0;
+		FLUSH;
 
 		printf("\n Please select the scheduling algorithm to use: ");
 		printf("\n 1. Round Robin");
 		printf("\n 2. Lottery");
 		printf("\n 3. Priority\n");
-		scanf("%i", &scheduler_choice);	//can possibly do an enum here.
+		scanf("%i", &scheduler_choice);
 		printf("%i", scheduler_choice);
+		printf("somethign stupid");
+		scanf("");
 		return;
 
 

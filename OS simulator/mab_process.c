@@ -58,6 +58,7 @@ PCBStr * make_process(int proc_id, int type) {
 		default:
 			break;
 	}
+	return p;
 }
 
 void init_array(int * a) {
@@ -77,7 +78,8 @@ void add_io_system_calls(int * a, int steps) {
 void add_pc_system_calls(int * a, int steps, int type) {
 	int i, random;
 	for (i = 0; i < steps; i++) {
-		random = rand() % NUM_INSTRUCTIONS - 1;
+		random = rand() % (NUM_INSTRUCTIONS / 2);
+		/*
 		if (random < NUM_INSTRUCTIONS - 3 && (a[random] == INSTRUCTION_NOP
 			&& a[random + 1] == INSTRUCTION_NOP && a[random + 2] == INSTRUCTION_NOP)) {
 			a[random] = INSTRUCTION_MUTEX_LOCK;
@@ -89,7 +91,7 @@ void add_pc_system_calls(int * a, int steps, int type) {
 			a[random + 2] = INSTRUCTION_MUTEX_UNLOCK;
 		} else {
 			i--;
-		}
+		}*/
 	}
 
 }
