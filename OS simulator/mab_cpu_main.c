@@ -128,32 +128,32 @@ int main(int argc, char * argv[])
 
 	// fill process table
 	int i;
-	int thread_id = 0;
+	int proc_id = 0;
 	for (i = 0; i < num_keyboard_processes; i++) {
-		PCBStr *p = make_kb_process(thread_id, KEYBOARD);
-		all_pcbs[thread_id] = *p;
-		thread_id++;
+		PCBStr *p = make_process(proc_id, KEYBOARD);
+		all_pcbs[proc_id] = p;
+		proc_id++;
 	}
 
 	for (i = 0; i < num_io_processes; i++) {
-		PCBStr *p = make_io_process(thread_id, IO);
-		all_pcbs[thread_id] = *p;
-		thread_id++;
+		PCBStr *p = make_process(proc_id, IO);
+		all_pcbs[proc_id] = p;
+		proc_id++;
 	}
 
 	for (i = 0; i < num_pc_processes; i++) {
-		PCBStr *p = make_producer_process(thread_id, PRODUCER);
-		all_pcbs[thread_id] = *p;
-		thread_id++;
-		PCBStr *c = make_consumer_process(thread_id, CONSUMER);
-		all_pcbs[thread_id] = *c;
-		thread_id++;
+		PCBStr *p = make_process(proc_id, PRODUCER);
+		all_pcbs[proc_id] = p;
+		proc_id++;
+		PCBStr *c = make_process(proc_id, CONSUMER);
+		all_pcbs[proc_id] = c;
+		proc_id++;
 	}
 
 	for (i = 0; i < num_compute_processes; i++) {
-		PCBStr *p = make_compute_process(thread_id, COMPUTE);
-		all_pcbs[thread_id] = *p;
-		thread_id++;
+		PCBStr *p = make_process(proc_id, COMPUTE);
+		all_pcbs[proc_id] = p;
+		proc_id++;
 	}
 
 	int run_scheduler = 0;
@@ -366,9 +366,6 @@ void get_input()
 	{
 		CLEAR;
 		FLUSH;
-			printf("\n Please enter total number of processes to run: ");
-			scanf("%d", &num_processes);
-			FLUSH;
 			num_compute_processes = num_processes;
 			printf("\n Please enter total number of keyboard processes to run: ");
 			scanf("%d", &num_keyboard_processes);

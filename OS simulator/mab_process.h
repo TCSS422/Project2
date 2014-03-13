@@ -26,7 +26,7 @@ typedef struct pcb_str {
 	int next_step;		// this is the step count that the CPU had gotten to when this process was
 						// prempted (like a PC register value)
 	int state;			// e.g. 0=running, 1=ready, 2=interrupted, 3=blocked
-	ProcessStr proc;    // pointer to the actual process
+	ProcessStr *proc;    // pointer to the actual process
 	int waiting_on;		// which queue is it in if it is waiting on something (blocked)
 	int owns;			// which mutex lock does it own
 	// anything else you need
@@ -35,6 +35,7 @@ typedef struct pcb_str {
 } PCBStr;
 
 typedef int INSTRUCTION;
+typedef int PROCESS;
 
 #define NUM_INSTRUCTIONS 10000
 
@@ -52,16 +53,18 @@ typedef int INSTRUCTION;
 #define BLOCKED 	2
 
 // types
-#define COMPUTE  	0
-#define IO       	1
-#define KEYBOARD 	2
-#define PRODUCER 	3
-#define CONSUMER 	4
+#define PROCESS_COMPUTE  	0
+#define PROCESS_IO       	1
+#define PROCESS_KEYBOARD 	2
+#define PROCESS_PRODUCER 	3
+#define PROCESS_CONSUMER 	4
 
 // functions
 char * getProcess(int);
 char * getState(int);
 
-PCBStr * make_kb_process(int, INSTRUCTION);
+PCBStr * make_process(int, PROCESS);
+
+int * init_array();
 
 #endif /* PROCESS_H_ */

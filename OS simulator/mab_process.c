@@ -7,10 +7,102 @@
 
 #include "process.h"
 
-#define N 15
+#define HI_PRIORITY  3
+#define MED_PRIORITY 2
+#define LO_PRIORITY  1
 
-PCBStr * make_kb_process(int thread_id, INSTRUCTION type) {
+void add_output_system_calls(int *);
+void add_producer_system_calls(int *);
+void add_consumer_system_calls(int *);
 
+PCBStr * make_process(int proc_id, PROCESS type) {
+	PCBStr *p;
+	ProcessStr *proc;
+	int *r;
+	int i, steps;
+	p = malloc(sizeof(PCBStr));
+	p->pid = proc_id;
+	p->state = READY;
+	proc = malloc(sizeof(ProcessStr));
+	p->proc = proc;
+	proc->proc_type = type;
+	proc->no_steps = rand() % NUM_INSTRUCTIONS; // random number of steps within range
+	proc->no_requests = NUM_INSTRUCTIONS;
+	r = malloc(sizeof(NUM_INSTRUCTIONS));
+	proc->requests = r;
+	init_array(r);
+
+	switch (type)
+	{
+		steps = proc->no_steps;
+		case COMPUTE:
+			p->priority = LO_PRIORITY;
+			add_output_system_calls(r, steps);
+			break;
+		case IO:
+			p->priority = HI_PRIORITY;
+			add_output_system_calls(r, steps);
+			break;
+		case KEYBOARD:
+			p->priority = HI_PRIORITY;
+			add_output_system_calls(r, steps);
+			break;
+		case PRODUCER:
+			p->priority = MED_PRIORITY;
+			add_producer_system_calls(r, steps);
+			break;
+		case CONSUMER:
+			p->priority = MED_PRIORITY;
+			add_consumer_system_calls(r, steps);
+			break;
+		default:
+			break;
+	}
+}
+
+void init_array(int * a) {
+	int i;
+	for (i = 0; i < NUM_INSTRUCTIONS; i++) {
+		a[i] = INSTRUCTION_NOP;
+	}
+}
+
+void add_output_system_calls(int * a, int steps) {
+	int i;
+	for (i = 0; i < NUM_INSTRUCTIONS; i++) {
+		a[rand() % NUM_INSTRUCTIONS - 1] = INSTRUCTION_OUTPUT;
+	}
+}
+
+void add_producer_system_calls(int * a, int steps) {
+	int i, rand;
+	for (i = 0; i < steps; i++) {
+		rand = rand() % NUM_INSTRUCTIONS - 1;
+		if (rand < NUM_INSTRUCTIONS - 3 && (a[rand] == INSTRUCTION_NOP
+			&& a[rand + 1] == INSTRUCTION_NOP && a[rand + 2] == INSTRUCTION_NOP)) {
+			a[rand] = INSTRUCTION_MUTEX_LOCK;
+			a[rand + 1] = INSTRUCTION_INC_SHARED_MEM;
+			a[rand + 2] = INSTRUCTION_MUTEX_UNLOCK;
+		} else {
+			i--;
+		}
+	}
+
+}
+
+void add_consumer_system_calls(int * a, int steps) {
+	int i, rand;
+	for (i = 0; i < steps; i++) {
+		rand = rand() % NUM_INSTRUCTIONS - 1;
+		if (rand < NUM_INSTRUCTIONS - 3 && (a[rand] == INSTRUCTION_NOP
+			&& a[rand + 1] == INSTRUCTION_NOP && a[rand + 2] == INSTRUCTION_NOP)) {
+			a[rand] = INSTRUCTION_MUTEX_LOCK;
+			a[rand + 1] = INSTRUCTION_DEC_SHARED_MEM;
+			a[rand + 2] = INSTRUCTION_MUTEX_UNLOCK;
+		} else {
+			i--;
+		}
+	}
 }
 
 /*
