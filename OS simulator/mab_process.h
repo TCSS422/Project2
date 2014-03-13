@@ -53,14 +53,16 @@ typedef int PROCESS;
 #define BLOCKED 	2
 
 // types
-#define PROCESS_COMPUTE  	0
-#define PROCESS_IO       	1
-#define PROCESS_KEYBOARD 	2
-#define PROCESS_PRODUCER 	3
-#define PROCESS_CONSUMER 	4
+#define COMPUTE  	0
+#define IO       	1
+#define KEYBOARD 	2
+#define PRODUCER 	3
+#define CONSUMER 	4
 
 // functions
-PCBStr * make_process(int, PROCESS);
+PCBStr * make_process(int, int);
+void add_io_system_calls(int * a, int steps);
+
 
 // char * getProcess(int);
 // char * getState(int);

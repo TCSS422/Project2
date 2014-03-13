@@ -18,7 +18,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "process.h"
+#include "mab_process.h"
 #include <unistd.h>
 #include "queue.h"
 #include <string.h>
@@ -83,9 +83,9 @@ int num_keyboard_processes;
 //total number of compute processes(total processes - all the other input processes)
 int num_compute_processes;
 //scheduler selection at prompt
-int scheduler_choice;		// 1 round robin 2 lottery 3 priority - possibly change to an enum
+int scheduler_choice = 0;		// 1 round robin 2 lottery 3 priority - possibly change to an enum
 // Holds which interrupts have been activated
-int global_interrupt_state;
+int global_interrupt_state = 0;
 
 // Global signal to all threads - if it's FALSE then everybody should wrap things up and exit
 int global_run_state = TRUE;
@@ -121,10 +121,14 @@ int main(int argc, char * argv[])
 
 	PCBStr ** all_pcbs;
 
+	num_processes = 10;
+	get_input();
+	printf("why are you not working");
 	int total_processes = num_keyboard_processes + num_io_processes + (2 * num_pc_processes) + num_compute_processes;
-
+	printf("why are you not working");
 	// initialize process table
 	all_pcbs = (PCBStr **)malloc(total_processes * sizeof(PCBStr *));
+	printf("why are you not working");
 
 	// fill process table
 	int i;
@@ -155,6 +159,11 @@ int main(int argc, char * argv[])
 		all_pcbs[proc_id] = p;
 		proc_id++;
 	}
+
+	printf("%i", proc_id);
+	printf("\n");
+	current_pcb = all_pcbs[0];
+	current_process = current_pcb->proc;
 
 	int run_scheduler = 0;
 
@@ -209,8 +218,10 @@ int main(int argc, char * argv[])
 		shared_mem[i] = 0;	// all shared memory will start at zero
 		buildQueue(BLOCK_QUEUE_LENGTH, processes_blocked_on_shared_mem[i]);
 	}
+	printf("OK, created the shared memory");
 
 	while (TRUE) {
+		printf("got to the first step");
 		usleep(100000); // Run 10 steps/second, slowed down enough to be capable of human comprehension
 		printf("whoop whoop");
 		// sources of interrupts: timer, I/O devices, system calls
@@ -234,7 +245,7 @@ int main(int argc, char * argv[])
 				if (argument != KB_DEVICE)
 				{
 					pthread_t temp_input_thread;
-					pthread_create(&temp_input_thread, NULL, io_interrupt, NULL);
+					pthread_create(&temp_input_thread, NULL, io_interrupt_fp, NULL);
 				}
 				break;
 			case INSTRUCTION_MUTEX_LOCK:
@@ -361,35 +372,31 @@ int main(int argc, char * argv[])
 //remaining will be compute bound
 void get_input()
 {
-	num_compute_processes = 0;
-	while(num_compute_processes < 1)
-	{
-		CLEAR;
-		FLUSH;
-			num_compute_processes = num_processes;
-			printf("\n Please enter total number of keyboard processes to run: ");
-			scanf("%d", &num_keyboard_processes);
-			FLUSH;
-			num_compute_processes = num_processes - num_keyboard_processes;
-			printf("\n Please enter total number of I/O bound processes to run: ");
-			scanf("%d", &num_io_processes);
-			FLUSH;
-			num_compute_processes = num_processes - num_io_processes;
-			printf("\n Please enter total number of p/c processes to run: ");
-			scanf("%d", &num_pc_processes);
-			num_compute_processes = num_processes - num_pc_processes;
-			FLUSH;
-			printf("\n Please select the scheduling algorithm to use: ");
-			printf("\n 1. Round Robin");
-			printf("\n 2. Lottery");
-			printf("\n 3. Priority");
-			scanf("%d", &scheduler_choice);	//can possibly do an enum here.
-			if(num_compute_processes < 1)
-			{
-				printf("\n ERROR! You did not enter enough total processes. Please re-enter process information. ");
-			}
-	}
 
+		num_compute_processes = num_processes;
+		printf("\n Please enter total number of keyboard processes to run: ");
+		scanf("%i", &num_keyboard_processes);
+		printf("%i", num_keyboard_processes);
+
+		num_compute_processes = num_compute_processes - num_keyboard_processes;
+		printf("\n Please enter total number of I/O bound processes to run: ");
+		scanf("%i", &num_io_processes);
+		printf("%i", num_io_processes);
+
+		num_compute_processes = num_compute_processes - num_io_processes;
+		printf("\n Please enter total number of p/c processes to run: ");
+		scanf("%i", &num_pc_processes);
+		printf("%i", num_pc_processes);
+
+		num_compute_processes = num_compute_processes - num_pc_processes;
+
+		printf("\n Please select the scheduling algorithm to use: ");
+		printf("\n 1. Round Robin");
+		printf("\n 2. Lottery");
+		printf("\n 3. Priority\n");
+		scanf("%i", &scheduler_choice);	//can possibly do an enum here.
+		printf("%i", scheduler_choice);
+		return;
 
 
 }
@@ -401,13 +408,13 @@ void timer_interrupt()
 {
 	while(global_run_state == TRUE)
 	{
-		printf("TICK TOCK MOTHAFUCKA\n");
+
 		usleep(5000000);	// 5 seconds
 		pthread_mutex_lock(&interrupt_mutex);
 		if (!(global_interrupt_state & TIMER_INTERRUPT))
 			global_interrupt_state += TIMER_INTERRUPT;
 		pthread_mutex_unlock(&interrupt_mutex);
-
+		printf("TICK TOCK MOTHAFUCKA\n");
 	}
 }
 

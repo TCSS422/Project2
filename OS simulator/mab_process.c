@@ -5,17 +5,17 @@
  *      Author: Group10
  */
 
-#include "process.h"
-
+#include "mab_process.h"
+#include <stdlib.h>
 #define HI_PRIORITY  3
 #define MED_PRIORITY 2
 #define LO_PRIORITY  1
 
 void init_array(int *);
-void add_io_system_calls(int *);
-void add_pc_system_calls(int *);
+void add_io_system_calls(int *, int);
+void add_pc_system_calls(int *, int, int);
 
-PCBStr * make_process(int proc_id, PROCESS type) {
+PCBStr * make_process(int proc_id, int type) {
 	PCBStr *p;
 	ProcessStr *proc;
 	int *r;
@@ -74,19 +74,19 @@ void add_io_system_calls(int * a, int steps) {
 	}
 }
 
-void add_pc_system_calls(int * a, int steps, PROCESS type) {
-	int i, rand;
+void add_pc_system_calls(int * a, int steps, int type) {
+	int i, random;
 	for (i = 0; i < steps; i++) {
-		rand = rand() % NUM_INSTRUCTIONS - 1;
-		if (rand < NUM_INSTRUCTIONS - 3 && (a[rand] == INSTRUCTION_NOP
-			&& a[rand + 1] == INSTRUCTION_NOP && a[rand + 2] == INSTRUCTION_NOP)) {
-			a[rand] = INSTRUCTION_MUTEX_LOCK;
+		random = rand() % NUM_INSTRUCTIONS - 1;
+		if (random < NUM_INSTRUCTIONS - 3 && (a[random] == INSTRUCTION_NOP
+			&& a[random + 1] == INSTRUCTION_NOP && a[random + 2] == INSTRUCTION_NOP)) {
+			a[random] = INSTRUCTION_MUTEX_LOCK;
 			if (type == PRODUCER) {
-				a[rand + 1] = INSTRUCTION_INC_SHARED_MEM;
+				a[random + 1] = INSTRUCTION_INC_SHARED_MEM;
 			} else {
-				a[rand + 1] = INSTRUCTION_DEC_SHARED_MEM;
+				a[random + 1] = INSTRUCTION_DEC_SHARED_MEM;
 			}
-			a[rand + 2] = INSTRUCTION_MUTEX_UNLOCK;
+			a[random + 2] = INSTRUCTION_MUTEX_UNLOCK;
 		} else {
 			i--;
 		}
