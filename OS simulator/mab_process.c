@@ -70,7 +70,7 @@ void init_array(int * a) {
 
 void add_output_system_calls(int * a, int steps) {
 	int i;
-	for (i = 0; i < NUM_INSTRUCTIONS; i++) {
+	for (i = 0; i < steps; i++) {
 		a[rand() % NUM_INSTRUCTIONS - 1] = INSTRUCTION_OUTPUT;
 	}
 }
