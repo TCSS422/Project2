@@ -18,12 +18,15 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "mab_process.h"
 #include <unistd.h>
-#include "queue.h"
 #include <string.h>
-#include "scheduler.h"
 #include <termios.h>
+
+#include "mab_process.h"
+#include "queue.h"
+#include "scheduler.h"
+
+
 //used to cross compile between win and unix based system commands
 #ifdef _WIN32
 	#define CLEAR system("cls")
@@ -37,14 +40,9 @@
 
 #endif
 
-
-void draino(void)
-{
-	char c;
-	while( (c=fgetc(stdin)) !='\n' ) ;
-}
 #define TRUE 1
 #define FALSE 0
+#define NULL ((void *) 0)
 
 #define RUN 1
 #define INTERRUPT 0
@@ -55,7 +53,6 @@ void draino(void)
 #define NUM_MUTEXES 3
 #define NUM_SHARED_MEM_LOCS 4
 #define BLOCK_QUEUE_LENGTH 10
-
 #define NOBODY_HOLDS_MUTEX -1
 
 // possible interrupt state values
@@ -73,7 +70,6 @@ void draino(void)
 
 // total number of processes
 int num_processes;
-
 // total number of producer consumer processes
 int num_pc_processes;
 //total number of i/o processes
@@ -86,18 +82,14 @@ int num_compute_processes;
 int scheduler_choice;		// 1 round robin 2 lottery 3 priority - possibly change to an enum
 // Holds which interrupts have been activated
 int global_interrupt_state = 0;
-
 // Global signal to all threads - if it's FALSE then everybody should wrap things up and exit
 int global_run_state = TRUE;
 
-PCBStr pcb_to_run; //PCB returned from scheduler to run.
-
-
+//PCB returned from scheduler to run.
+PCBStr pcb_to_run;
 
 // Mutex so we don't modify interrupts in the process of handling them
 pthread_mutex_t interrupt_mutex;
-
-
 
 // Timer device
 void timer_interrupt();
@@ -111,11 +103,18 @@ void* kb_interrupt_fp = (*kb_interrupt);
 void io_interrupt();
 void* io_interrupt_fp = (*io_interrupt);
 
+// User input
 void get_input();
+
+// Some function for cleaning something
+void draino(void)
+{
+	char c;
+	while( (c=fgetc(stdin)) !='\n' ) ;
+}
 
 int main(int argc, char * argv[])
 {
-	// TODO: this is temporary, just to have placeholders for
 	PCBStr * current_pcb;
 	ProcessStr * current_process;
 

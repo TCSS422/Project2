@@ -1,8 +1,9 @@
 /*
- * scheduler.h
+ * scheduler.h  : General call to scheduler that returns the next runnable
+ * 				  process.
  *
  *  Created on: Mar 11, 2014
- *      Author: mike
+ *      Author: Group10
  */
 
 #ifndef SCHEDULER_H_
@@ -10,9 +11,5 @@
 
 // functions
 int scheduler(int sched_policy, PCBStr ** all_pcbs, int num_processes, int curr_process);
-int PriorityScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process);
-int RoundRobinScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process);
-int LotteryScheduler(int num_processes);
-
 
 #endif /* SCHEDULER_H_ */

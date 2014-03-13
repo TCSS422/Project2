@@ -1,14 +1,21 @@
 /*
- * MikesScheduler.c
+ * scheduler.c  : Implementation of scheduler functions.
  *
  *  Created on: Mar 11, 2014
- *      Author: mike
+ *      Author: Group10
  */
+
+#include <stdlib.h>
 
 #include "mab_process.h"
 #include "scheduler.h"
-#include <stdlib.h>
 
+// these functions are of no concern to an outside caller
+int PriorityScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process);
+int RoundRobinScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process);
+int LotteryScheduler(int num_processes);
+
+// use variable to call function specific to policy
 int scheduler(int sched_policy, PCBStr ** all_pcbs, int num_processes, int curr_process)
 {
 	switch(sched_policy)
@@ -26,6 +33,8 @@ int scheduler(int sched_policy, PCBStr ** all_pcbs, int num_processes, int curr_
 	return 0; // shouldn't ever get here
 }
 
+// io-keyboard tasks are highest priority, followed by p-c memory management,
+// then background processes
 int PriorityScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process)
 {
 	int i;
@@ -46,6 +55,7 @@ int PriorityScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process)
 	return nextProcess;
 }
 
+// simple queue
 int RoundRobinScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process)
 {
 	int front = 0;
@@ -66,8 +76,9 @@ int RoundRobinScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process)
 	return head;
 }
 
+// simply return a random
 int LotteryScheduler(int num_processes)
 {
-	// this seems too easy, but we'll take it
+	// this seems too easy, but for simulation we'll take it
 	return rand() % num_processes - 1;
 }

@@ -5,16 +5,20 @@
  *      Author: Group10
  */
 
-#include "mab_process.h"
 #include <stdlib.h>
+
+#include "mab_process.h"
+
 #define HI_PRIORITY  3
-#define MED_PRIORITY 2
+#define MD_PRIORITY 2
 #define LO_PRIORITY  1
 
+// these functions are of no concern to an outside caller
 void init_array(int *);
 void add_io_system_calls(int *, int);
 void add_pc_system_calls(int *, int, int);
 
+// most process initialization can be generalized
 PCBStr * make_process(int proc_id, int type) {
 	PCBStr *p;
 	ProcessStr *proc;
@@ -32,6 +36,7 @@ PCBStr * make_process(int proc_id, int type) {
 	proc->requests = r;
 	init_array(r);
 
+	// complete initialization per process type
 	switch (type)
 	{
 		steps = proc->no_steps;
@@ -48,11 +53,11 @@ PCBStr * make_process(int proc_id, int type) {
 			add_io_system_calls(r, steps);
 			break;
 		case PRODUCER:
-			p->priority = MED_PRIORITY;
+			p->priority = MD_PRIORITY;
 			add_pc_system_calls(r, steps, type);
 			break;
 		case CONSUMER:
-			p->priority = MED_PRIORITY;
+			p->priority = MD_PRIORITY;
 			add_pc_system_calls(r, steps, type);
 			break;
 		default:
@@ -61,6 +66,7 @@ PCBStr * make_process(int proc_id, int type) {
 	return p;
 }
 
+// construct an array of nop default values
 void init_array(int * a) {
 	int i;
 	for (i = 0; i < NUM_INSTRUCTIONS; i++) {
@@ -68,20 +74,22 @@ void init_array(int * a) {
 	}
 }
 
+// for random number of steps place instructions randomly
 void add_io_system_calls(int * a, int steps) {
 	int i;
 	for (i = 0; i < steps; i++) {
-		a[rand() % NUM_INSTRUCTIONS - 1] = INSTRUCTION_OUTPUT;
+		a[rand() % NUM_INSTRUCTIONS] = INSTRUCTION_OUTPUT;
 	}
 }
 
+// for random number of steps place instructions randomly
 void add_pc_system_calls(int * a, int steps, int type) {
 	int i, random;
 	for (i = 0; i < steps; i++) {
-		random = rand() % (NUM_INSTRUCTIONS / 2);
-		/*
-		if (random < NUM_INSTRUCTIONS - 3 && (a[random] == INSTRUCTION_NOP
-			&& a[random + 1] == INSTRUCTION_NOP && a[random + 2] == INSTRUCTION_NOP)) {
+		random = rand() % (NUM_INSTRUCTIONS - 3); // - 3 for looking ahead
+		if ((a[random] == INSTRUCTION_NOP
+		     && a[random + 1] == INSTRUCTION_NOP
+		     && a[random + 2] == INSTRUCTION_NOP)) {
 			a[random] = INSTRUCTION_MUTEX_LOCK;
 			if (type == PRODUCER) {
 				a[random + 1] = INSTRUCTION_INC_SHARED_MEM;
@@ -91,10 +99,12 @@ void add_pc_system_calls(int * a, int steps, int type) {
 			a[random + 2] = INSTRUCTION_MUTEX_UNLOCK;
 		} else {
 			i--;
-		}*/
+		}
 	}
 
 }
+
+// maybe we can use this later, if not we can remove
 
 /*
 char * getProcess(int val)

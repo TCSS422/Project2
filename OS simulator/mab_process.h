@@ -4,8 +4,6 @@
  *  Created on: Mar 8, 2014
  *      Author: George Mobus (http://faculty.washington.edu/gmobus/Academics/TCSS422/MoodleFiles/Project2.html)
  *      		Group10
- *
- *      		testing 123
  */
 
 #ifndef PROCESS_H_
@@ -35,7 +33,6 @@ typedef struct pcb_str {
 } PCBStr;
 
 typedef int INSTRUCTION;
-typedef int PROCESS;
 
 #define NUM_INSTRUCTIONS 10000
 
@@ -61,8 +58,6 @@ typedef int PROCESS;
 
 // functions
 PCBStr * make_process(int, int);
-void add_io_system_calls(int * a, int steps);
-
 
 // char * getProcess(int);
 // char * getState(int);
