@@ -11,6 +11,7 @@
 #define MED_PRIORITY 2
 #define LO_PRIORITY  1
 
+void init_array(int *);
 void add_output_system_calls(int *);
 void add_producer_system_calls(int *);
 void add_consumer_system_calls(int *);

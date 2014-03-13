@@ -60,11 +60,9 @@ typedef int PROCESS;
 #define PROCESS_CONSUMER 	4
 
 // functions
-char * getProcess(int);
-char * getState(int);
-
 PCBStr * make_process(int, PROCESS);
 
-int * init_array();
+// char * getProcess(int);
+// char * getState(int);
 
 #endif /* PROCESS_H_ */
