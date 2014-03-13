@@ -12,9 +12,8 @@
 #define LO_PRIORITY  1
 
 void init_array(int *);
-void add_output_system_calls(int *);
-void add_producer_system_calls(int *);
-void add_consumer_system_calls(int *);
+void add_io_system_calls(int *);
+void add_pc_system_calls(int *);
 
 PCBStr * make_process(int proc_id, PROCESS type) {
 	PCBStr *p;
@@ -38,23 +37,23 @@ PCBStr * make_process(int proc_id, PROCESS type) {
 		steps = proc->no_steps;
 		case COMPUTE:
 			p->priority = LO_PRIORITY;
-			add_output_system_calls(r, steps);
+			add_io_system_calls(r, steps);
 			break;
 		case IO:
 			p->priority = HI_PRIORITY;
-			add_output_system_calls(r, steps);
+			add_io_system_calls(r, steps);
 			break;
 		case KEYBOARD:
 			p->priority = HI_PRIORITY;
-			add_output_system_calls(r, steps);
+			add_io_system_calls(r, steps);
 			break;
 		case PRODUCER:
 			p->priority = MED_PRIORITY;
-			add_producer_system_calls(r, steps);
+			add_pc_system_calls(r, steps, type);
 			break;
 		case CONSUMER:
 			p->priority = MED_PRIORITY;
-			add_consumer_system_calls(r, steps);
+			add_pc_system_calls(r, steps, type);
 			break;
 		default:
 			break;
@@ -68,42 +67,31 @@ void init_array(int * a) {
 	}
 }
 
-void add_output_system_calls(int * a, int steps) {
+void add_io_system_calls(int * a, int steps) {
 	int i;
 	for (i = 0; i < steps; i++) {
 		a[rand() % NUM_INSTRUCTIONS - 1] = INSTRUCTION_OUTPUT;
 	}
 }
 
-void add_producer_system_calls(int * a, int steps) {
+void add_pc_system_calls(int * a, int steps, PROCESS type) {
 	int i, rand;
 	for (i = 0; i < steps; i++) {
 		rand = rand() % NUM_INSTRUCTIONS - 1;
 		if (rand < NUM_INSTRUCTIONS - 3 && (a[rand] == INSTRUCTION_NOP
 			&& a[rand + 1] == INSTRUCTION_NOP && a[rand + 2] == INSTRUCTION_NOP)) {
 			a[rand] = INSTRUCTION_MUTEX_LOCK;
-			a[rand + 1] = INSTRUCTION_INC_SHARED_MEM;
+			if (type == PRODUCER) {
+				a[rand + 1] = INSTRUCTION_INC_SHARED_MEM;
+			} else {
+				a[rand + 1] = INSTRUCTION_DEC_SHARED_MEM;
+			}
 			a[rand + 2] = INSTRUCTION_MUTEX_UNLOCK;
 		} else {
 			i--;
 		}
 	}
 
-}
-
-void add_consumer_system_calls(int * a, int steps) {
-	int i, rand;
-	for (i = 0; i < steps; i++) {
-		rand = rand() % NUM_INSTRUCTIONS - 1;
-		if (rand < NUM_INSTRUCTIONS - 3 && (a[rand] == INSTRUCTION_NOP
-			&& a[rand + 1] == INSTRUCTION_NOP && a[rand + 2] == INSTRUCTION_NOP)) {
-			a[rand] = INSTRUCTION_MUTEX_LOCK;
-			a[rand + 1] = INSTRUCTION_DEC_SHARED_MEM;
-			a[rand + 2] = INSTRUCTION_MUTEX_UNLOCK;
-		} else {
-			i--;
-		}
-	}
 }
 
 /*
