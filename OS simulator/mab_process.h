@@ -24,10 +24,10 @@ typedef struct pcb_str {
 	int next_step;		// this is the step count that the CPU had gotten to when this process was
 						// prempted (like a PC register value)
 	int state;			// e.g. 0=running, 1=ready, 2=interrupted, 3=blocked
-	ProcessStr *proc;    // pointer to the actual process
-	int waiting_on;		// which queue is it in if it is waiting on something (blocked)
-	int owns;			// which mutex lock does it own
-	// anything else you need
+	ProcessStr *proc;   // pointer to the actual process
+	int device;			// device that this process wants to use
+	int mutex;			// mutex that this process wants to use
+	int mem_loc;	    // memory location that this process wants to use
 	int priority;		// priority rankings for scheduling, e.g. 3=io-keyboard (tasks),
 						// 2=producer-consumer (memory mgmt) , 1=calculator (background)
 } PCBStr;

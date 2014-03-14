@@ -10,7 +10,7 @@
 #include "mab_process.h"
 
 #define HI_PRIORITY  3
-#define MD_PRIORITY 2
+#define MD_PRIORITY  2
 #define LO_PRIORITY  1
 
 // these functions are of no concern to an outside caller
@@ -66,7 +66,7 @@ PCBStr * make_process(int proc_id, int type) {
 	return p;
 }
 
-// construct an array of nop default values
+// fill an array of nop default values
 void init_array(int * a) {
 	int i;
 	for (i = 0; i < NUM_INSTRUCTIONS; i++) {
@@ -74,7 +74,7 @@ void init_array(int * a) {
 	}
 }
 
-// for random number of steps place instructions randomly
+// for number of steps, place instructions randomly
 void add_io_system_calls(int * a, int steps) {
 	int i;
 	for (i = 0; i < steps; i++) {
@@ -82,21 +82,17 @@ void add_io_system_calls(int * a, int steps) {
 	}
 }
 
-// for random number of steps place instructions randomly
+// for number of steps place instructions randomly
 void add_pc_system_calls(int * a, int steps, int type) {
 	int i, random;
 	for (i = 0; i < steps; i++) {
-		random = rand() % (NUM_INSTRUCTIONS - 3); // - 3 for looking ahead
-		if ((a[random] == INSTRUCTION_NOP
-		     && a[random + 1] == INSTRUCTION_NOP
-		     && a[random + 2] == INSTRUCTION_NOP)) {
-			a[random] = INSTRUCTION_MUTEX_LOCK;
+		random = rand() % NUM_INSTRUCTIONS;
+		if (a[random] == INSTRUCTION_NOP) {
 			if (type == PRODUCER) {
-				a[random + 1] = INSTRUCTION_INC_SHARED_MEM;
+				a[random] = INSTRUCTION_INC_SHARED_MEM;
 			} else {
-				a[random + 1] = INSTRUCTION_DEC_SHARED_MEM;
+				a[random] = INSTRUCTION_DEC_SHARED_MEM;
 			}
-			a[random + 2] = INSTRUCTION_MUTEX_UNLOCK;
 		} else {
 			i--;
 		}
