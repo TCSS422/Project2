@@ -30,11 +30,12 @@ int addToEnd(queue target, int newData)
 
 int getFirstItem(queue target)
 {
+	int i;
 	if (target.position >= 0)
 	{
 		int returndata = target.data[0];
 		target.position--;
-		for (int i = 0; i < target.size; i++)
+		for (i = 0; i < target.size; i++)
 		{
 			target.data[i] = target.data[i + 1];	// terribly inefficient.
 			// TODO: make it all nice and modulusy

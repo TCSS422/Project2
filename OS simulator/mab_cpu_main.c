@@ -209,7 +209,7 @@ int main(int argc, char * argv[])
 
 	// Initialize blocked-process queue for devices
 	queue process_blocked_on_devices[num_devices];
-	for (int i = 0; i < num_devices; i++)
+	for (i = 0; i < num_devices; i++)
 	{
 		buildQueue(BLOCK_QUEUE_LENGTH, process_blocked_on_devices[i]);
 	}
@@ -218,7 +218,7 @@ int main(int argc, char * argv[])
 	// Initialize mutexes and blocked-process queue for mutexes
 	int mutexes[num_mutexes];		// keeps track of current mutex holder, -1 = nobody
 	queue processes_blocked_on_mutexes[num_mutexes];	// keeps track of who's waiting to grab a mutex
-	for (int i = 0; i < num_mutexes; i++)
+	for (i = 0; i < num_mutexes; i++)
 	{
 		mutexes[i] = NOBODY_HOLDS_MUTEX;
 		buildQueue(BLOCK_QUEUE_LENGTH, processes_blocked_on_mutexes[i]);
@@ -228,7 +228,7 @@ int main(int argc, char * argv[])
 	// Initialize shared memory locations and blocked-process queue for same
 	int shared_mem[num_mem_locs];
 	queue processes_blocked_on_shared_mem[num_mem_locs];
-	for (int i = 0; i < num_mem_locs; i++)
+	for (i = 0; i < num_mem_locs; i++)
 	{
 		shared_mem[i] = 0;	// all shared memory will start at zero
 		buildQueue(BLOCK_QUEUE_LENGTH, processes_blocked_on_shared_mem[i]);
