@@ -125,6 +125,11 @@ int main(int argc, char * argv[])
 
 	get_input();
 
+	if(num_compute_processes == 0)
+	{
+		num_compute_processes = 1;
+		printf("Automatically added one compute process to allow proper idle behavior\n");
+	}
 	num_processes = num_keyboard_processes + num_io_processes
 				  + (2 * num_pc_pairs) + num_compute_processes;
 	num_devices = 2;
