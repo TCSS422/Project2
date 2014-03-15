@@ -161,7 +161,7 @@ int main(int argc, char * argv[])
 	}
 
 	int num_pairs = 0;
-	for (i = 0; i < (num_pc_pairs * 2); i++) {
+	for (i = 0; i < num_pc_pairs; i++) {
 		PCBStr *p = make_process(proc_id, PRODUCER);
 		p->mutex = num_pairs;
 		p->mem_loc = num_pairs;
