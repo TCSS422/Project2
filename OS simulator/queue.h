@@ -2,7 +2,10 @@
  * queue.h
  *
  *  Created on: Mar 8, 2014
- *      Author: Peter
+ * 	Mike Baxter
+ *  Peter Pentescu
+ *  Maya Osbourne
+ *  Dawn Rocks
  */
 
 #ifndef QUEUE_H_

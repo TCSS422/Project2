@@ -9,7 +9,8 @@
 /*
  *	Dawn Rocks
  *	Maya Osbourne
- *	Mike Baxter Peter Pentescu
+ *	Mike Baxter
+ *	Peter Pentescu
  *
  *	TCSS422 Operating Systems
  *	Project 2 - Simulated OS
@@ -406,6 +407,45 @@ int main(int argc, char * argv[])
 		// or we hit the timer interrupt.
 		if (run_scheduler || current_pcb->state == BLOCKED)
 		{
+			printf("Running scheduler\n");
+			for (int i = 0; i < num_processes; i++)
+			{
+				printf("Process %d ", i);
+				switch (all_pcbs[i]->proc->proc_type)
+				{
+				case COMPUTE:
+					printf(" COMPUTE,");
+					break;
+				case IO:
+					printf(" IO,");
+					break;
+				case KEYBOARD:
+					printf(" KEYBOARD, ");
+					break;
+				case PRODUCER:
+					printf(" PRODUCER, ");
+					break;
+				case CONSUMER:
+					printf(" CONSUMER, ");
+					break;
+				default:
+					printf(" unknown ");
+				}
+				switch (all_pcbs[i]->state)
+				{
+				case READY:
+					printf(" is ready.\n");
+					break;
+				case RUNNING:
+					printf(" is running.\n");
+					break;
+				case BLOCKED:
+					printf(" is blocked.\n");
+					break;
+				default:
+					printf(" is in an unknown state\n.");
+				}
+			}
 			run_scheduler = FALSE;
 			// If we're running, go to a ready state (if we're blocked, keep it that way)
 			if (current_pcb->state == RUNNING)
@@ -431,34 +471,36 @@ void get_input()
 	int i = 0;
 	while(i == 0)
 	{
+		FLUSH;
 		printf("\n Please enter total number of keyboard processes to run: ");
-				scanf("%d", &num_keyboard_processes);
-				FLUSH;
-				printf("\n Please enter total number of I/O bound processes to run: ");
-				scanf("%d", &num_io_processes);
-				FLUSH;
-				printf("\n Please enter total number of p/c process pairs to run: ");
-				scanf("%d", &num_pc_pairs);
-				FLUSH;
-				printf("\n Please enter the number of compute processes to run: ");
-				scanf("%d", &num_compute_processes);
-				FLUSH;
+		scanf("%d", &num_keyboard_processes);
+		FLUSH;
+		printf("\n Please enter total number of I/O bound processes to run: ");
+		scanf("%d", &num_io_processes);
+		FLUSH;
+		printf("\n Please enter total number of p/c process pairs to run: ");
+		scanf("%d", &num_pc_pairs);
+		FLUSH;
+		printf("\n Please enter the number of compute processes to run: ");
+		scanf("%d", &num_compute_processes);
+		FLUSH;
 
-				printf("\n Please select the scheduling algorithm to use: ");
-				printf("\n 1. Round Robin");
-				printf("\n 2. Lottery");
-				printf("\n 3. Priority\n");
-				scanf("%d", &scheduler_choice);
-				if((num_keyboard_processes < 0) || (num_io_processes < 0) || (num_pc_pairs < 0) ||  (num_compute_processes < 0) || (scheduler_choice < 1 || scheduler_choice > 3))
-				{
-					i = 0;
-					printf("Please enter valid input range. Processes must be at least 0 and you must select a scheduler between 1 - 3. \n");
-				}
-				else
-				{
+		printf("\n Please select the scheduling algorithm to use: ");
+		printf("\n 1. Round Robin");
+		printf("\n 2. Lottery");
+		printf("\n 3. Priority\n");
+		scanf("%d", &scheduler_choice);
+		if((num_keyboard_processes < 0) || (num_io_processes < 0) || (num_pc_pairs < 0) ||  (num_compute_processes < 0) || (scheduler_choice < 1 || scheduler_choice > 3))
+		{
+			i = 0;
+			printf("Please enter valid input range. Processes must be at least 0 and you must select a scheduler between 1 - 3. \n");
+		}
+		else
+		{
 
-					i = 1;
-				}
+			i = 1;
+		}
+		FLUSH;
 	}
 
 }

@@ -2,6 +2,10 @@
  * process.c  : Implementation of process functions.
  *
  *  Created on: Mar 8, 2014
+ *  Mike Baxter
+ *  Peter Pentescu
+ *  Maya Osbourne
+ *  Dawn Rocks
  *      Author: Group10
  */
 
@@ -63,9 +67,6 @@ PCBStr * make_process(int proc_id, int type) {
 		default:
 			break;
 	}
-	for (int i = 0; i < p->proc->no_steps; i++)
-		printf("%d", p->proc->requests[i]);
-	printf("\n");
 	return p;
 }
 
@@ -105,56 +106,3 @@ void add_pc_system_calls(int * a, int steps, int type) {
 
 }
 
-// maybe we can use this later, if not we can remove
-
-/*
-char * getProcess(int val)
-{
-	char type[N];
-
-	switch(val)
-	{
-	case COMPUTE:
-		type = "Calculator";
-		break;
-	case IO:
-		type = "IO";
-		break;
-	case KEYBOARD:
-		type = "Keyboard";
-		break;
-	case PRODUCER:
-		type = "Producer";
-		break;
-	case CONSUMER:
-		type = "Consumer";
-		break;
-	default:
-		type = "Unknown";
-		break;
-	}
-	return type;
-}
-
-char * getState(int val)
-{
-	char type[N];
-
-	switch(val)
-	{
-	case RUNNING:
-		type = "RUNNING";
-		break;
-	case READY:
-		type = "RUNNABLE";
-		break;
-	case BLOCKED:
-		type = "BLOCKED";
-		break;
-	default:
-		type = "UNKNOWN";
-		break;
-	}
-	return type;
-}
-*/

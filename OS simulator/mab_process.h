@@ -3,6 +3,10 @@
  *
  *  Created on: Mar 8, 2014
  *      Author: George Mobus (http://faculty.washington.edu/gmobus/Academics/TCSS422/MoodleFiles/Project2.html)
+ *  Mike Baxter
+ *  Peter Pentescu
+ *  Maya Osbourne
+ *  Dawn Rocks
  *      		Group10
  */
 
@@ -59,8 +63,5 @@ typedef int INSTRUCTION;
 
 // functions
 PCBStr * make_process(int, int);
-
-// char * getProcess(int);
-// char * getState(int);
 
 #endif /* PROCESS_H_ */

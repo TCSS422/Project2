@@ -4,6 +4,10 @@
  *
  *  Created on: Mar 11, 2014
  *      Author: Group10
+ * 	Mike Baxter
+ *  Peter Pentescu
+ *  Maya Osbourne
+ *  Dawn Rocks
  */
 
 #ifndef SCHEDULER_H_

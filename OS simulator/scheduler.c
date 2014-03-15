@@ -3,6 +3,10 @@
  *
  *  Created on: Mar 11, 2014
  *      Author: Group10
+ *  Mike Baxter
+ *  Peter Pentescu
+ *  Maya Osbourne
+ *  Dawn Rocks
  */
 
 #include <stdlib.h>
@@ -77,7 +81,6 @@ int RoundRobinScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process)
 // simply return a random
 int LotteryScheduler(PCBStr ** all_pcbs, int num_processes)
 {
-	// this seems too easy, but for simulation we'll take it
 	int chosen_process = rand() % num_processes;
 	while (all_pcbs[chosen_process]->state == BLOCKED)
 		chosen_process = rand() % num_processes;

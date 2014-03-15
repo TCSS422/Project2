@@ -2,8 +2,11 @@
  * queue.c
  *
  *  Created on: Mar 8, 2014
- *      Author: Peter
  *
+ *	Mike Baxter
+ *  Peter Pentescu
+ *  Maya Osbourne
+ *  Dawn Rocks
  *  A queue of ints.
  */
 
@@ -48,7 +51,7 @@ int getFirstItem(queue * target)
 		(target->position)--;
 		for (i = 0; i < target->size; i++)
 		{
-			target->data[i] = target->data[i + 1];	// terribly inefficient.
+			target->data[i] = target->data[i + 1];
 		}
 		return returndata;
 	}
