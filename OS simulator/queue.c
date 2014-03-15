@@ -15,6 +15,10 @@ void buildQueue(int newsize, queue newQueue){
 	newQueue.position = -1;
 	newQueue.size = newsize;
 	newQueue.data = malloc(sizeof(int) * newsize);
+
+	for (int i = 0; i < newsize; i++) {
+		newQueue.data[i] = 0;
+	}
 }
 
 int addToEnd(queue target, int newData)

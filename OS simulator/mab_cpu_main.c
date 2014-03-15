@@ -117,7 +117,7 @@ void get_input();
 void draino(void)
 {
 	char c;
-	while( (c=fgetc(stdin)) !='\n' ) ;
+//	while( (c=fgetc(stdin)) !='\n' ) ;
 }
 
 int main(int argc, char * argv[])
@@ -131,7 +131,7 @@ int main(int argc, char * argv[])
 
 	num_processes = num_keyboard_processes + num_io_processes
 				  + (2 * num_pc_processes) + num_compute_processes;
-	num_devices = num_keyboard_processes + num_io_processes + num_compute_processes;
+	num_devices = 2;
 	num_mutexes = num_mem_locs = num_pc_processes;
 
 	// initialize process table

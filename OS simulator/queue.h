@@ -14,7 +14,7 @@ typedef struct {
 	int* data;
 } queue;
 
-void buildQueue(int newsize, queue newQueue);
+void buildQueue(int newsize, queue * newQueue);
 int addToEnd(queue target, int newData);
 int getFirstItem(queue target);
 int destroyQueue(queue target);
