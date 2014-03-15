@@ -35,7 +35,7 @@ typedef struct pcb_str {
 typedef int INSTRUCTION;
 
 #define NUM_INSTRUCTIONS 100
-#define NUM_REQUESTS 2
+#define NUM_REQUESTS 15
 
 // instructions
 #define INSTRUCTION_OUTPUT 			0		// Input is handled by interrupts, this is output only

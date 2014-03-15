@@ -43,10 +43,7 @@ int PriorityScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process)
 
 	for(i = 0; i < num_processes; i++)
 	{
-		// Check against current process so that same high priority process
-		// doesn't indefinitely. The next high priority process will get a turn,
-		// or a lower priority process will.
-		if (all_pcbs[i] -> priority > maxPriority && i != curr_process)
+		if (all_pcbs[i] -> priority > maxPriority && all_pcbs[i]->state != BLOCKED)
 		{
 			maxPriority = all_pcbs[i] -> priority;
 			nextProcess = i;

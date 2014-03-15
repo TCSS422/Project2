@@ -32,6 +32,13 @@ int addToEnd(queue * target, int newData)
 	else return 1;	// whoops, full
 }
 
+int hasData(queue * target)
+{
+	if (target -> position >= 0)
+		return 1;
+	else return 0;
+}
+
 int getFirstItem(queue * target)
 {
 	int i;

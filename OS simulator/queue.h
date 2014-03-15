@@ -18,5 +18,6 @@ void buildQueue(int newsize, queue * newQueue);
 int addToEnd(queue * target, int newData);
 int getFirstItem(queue * target);
 int destroyQueue(queue * target);
+int hasData(queue * target);
 
 #endif /* QUEUE_H_ */
