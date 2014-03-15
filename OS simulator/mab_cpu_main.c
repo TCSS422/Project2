@@ -121,7 +121,6 @@ int main(int argc, char * argv[])
 {
 	PCBStr * current_pcb;
 	ProcessStr * current_process;
-
 	PCBStr ** all_pcbs;
 
 	get_input();
@@ -424,25 +423,38 @@ int main(int argc, char * argv[])
 //remaining will be compute bound
 void get_input()
 {
-
+	int i = 0;
+	while(i == 0)
+	{
 		printf("\n Please enter total number of keyboard processes to run: ");
-		scanf("%d", &num_keyboard_processes);
-		FLUSH;
-		printf("\n Please enter total number of I/O bound processes to run: ");
-		scanf("%d", &num_io_processes);
-		FLUSH;
-		printf("\n Please enter total number of p/c process pairs to run: ");
-		scanf("%d", &num_pc_pairs);
-		FLUSH;
-		printf("\n Please enter the number of compute processes to run: ");
-		scanf("%d", &num_compute_processes);
-		FLUSH;
+				scanf("%d", &num_keyboard_processes);
+				FLUSH;
+				printf("\n Please enter total number of I/O bound processes to run: ");
+				scanf("%d", &num_io_processes);
+				FLUSH;
+				printf("\n Please enter total number of p/c process pairs to run: ");
+				scanf("%d", &num_pc_pairs);
+				FLUSH;
+				printf("\n Please enter the number of compute processes to run: ");
+				scanf("%d", &num_compute_processes);
+				FLUSH;
 
-		printf("\n Please select the scheduling algorithm to use: ");
-		printf("\n 1. Round Robin");
-		printf("\n 2. Lottery");
-		printf("\n 3. Priority\n");
-		scanf("%d", &scheduler_choice);
+				printf("\n Please select the scheduling algorithm to use: ");
+				printf("\n 1. Round Robin");
+				printf("\n 2. Lottery");
+				printf("\n 3. Priority\n");
+				scanf("%d", &scheduler_choice);
+				if((num_keyboard_processes < 0) || (num_io_processes < 0) || (num_pc_pairs < 0) ||  (num_compute_processes < 0) || (scheduler_choice < 1 || scheduler_choice > 3))
+				{
+					i = 0;
+					printf("Please enter valid input range. Processes must be at least 0 and you must select a scheduler between 1 - 3. \n");
+				}
+				else
+				{
+
+					i = 1;
+				}
+	}
 
 }
 
