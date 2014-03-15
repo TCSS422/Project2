@@ -135,7 +135,11 @@ int main(int argc, char * argv[])
 	num_mutexes = num_mem_locs = num_pc_processes;
 
 	// initialize process table
-	all_pcbs = (PCBStr **)malloc(num_processes * sizeof(PCBStr *));
+	all_pcbs = malloc(num_processes * sizeof(PCBStr *));
+	for (int i = 0; i < num_processes; i++)
+	{
+		all_pcbs[i] = malloc(sizeof(PCBStr));
+	}
 
 	// fill process table
 	int i;
@@ -144,6 +148,14 @@ int main(int argc, char * argv[])
 		PCBStr *p = make_process(proc_id, KEYBOARD);
 		p->device = KB_DEVICE;
 		all_pcbs[proc_id] = p;
+		printf("made a process, looks like this:\n");
+		for (int i = 0; i < p->proc->no_steps; i++)
+			printf("%d", p->proc->requests[i]);
+		printf("\n");
+		printf("in all pcbs (index %d, it looks like this:\n", proc_id);
+		for (int i = 0; i < all_pcbs[proc_id]->proc->no_steps; i++)
+			printf("%d", all_pcbs[proc_id]->proc->requests[i]);
+		printf("\n");
 		proc_id++;
 	}
 
@@ -151,6 +163,14 @@ int main(int argc, char * argv[])
 		PCBStr *p = make_process(proc_id, IO);
 		p->device = IO_DEVICE;
 		all_pcbs[proc_id] = p;
+		printf("made a process, looks like this:\n");
+		for (int i = 0; i < p->proc->no_steps; i++)
+			printf("%d", p->proc->requests[i]);
+		printf("\n");
+		printf("in all pcbs (index %d, it looks like this:\n", proc_id);
+		for (int i = 0; i < all_pcbs[proc_id]->proc->no_steps; i++)
+			printf("%d", all_pcbs[proc_id]->proc->requests[i]);
+		printf("\n");
 		proc_id++;
 	}
 
@@ -160,26 +180,58 @@ int main(int argc, char * argv[])
 		p->mutex = num_pairs;
 		p->mem_loc = num_pairs;
 		all_pcbs[proc_id] = p;
+		printf("made a process, looks like this:\n");
+		for (int i = 0; i < p->proc->no_steps; i++)
+			printf("%d", p->proc->requests[i]);
+		printf("\n");
+		printf("in all pcbs (index %d, it looks like this:\n", proc_id);
+		for (int i = 0; i < all_pcbs[proc_id]->proc->no_steps; i++)
+			printf("%d", all_pcbs[proc_id]->proc->requests[i]);
+		printf("\n");
 		proc_id++;
 
 		PCBStr *c = make_process(proc_id, CONSUMER);
 		c->mutex = num_pairs;
 		c->mem_loc = num_pairs;
 		all_pcbs[proc_id] = c;
+		printf("made a process, looks like this:\n");
+		for (int i = 0; i < c->proc->no_steps; i++)
+			printf("%d", c->proc->requests[i]);
+		printf("\n");
+		printf("in all pcbs (index %d, it looks like this:\n", proc_id);
+		for (int i = 0; i < all_pcbs[proc_id]->proc->no_steps; i++)
+			printf("%d", all_pcbs[proc_id]->proc->requests[i]);
+		printf("\n");
 		proc_id++;
 		num_pairs++;
 	}
 
 	for (i = 0; i < num_compute_processes; i++) {
 		PCBStr *p = make_process(proc_id, COMPUTE);
+		printf("made a process, looks like this:\n");
+		for (int i = 0; i < p->proc->no_steps; i++)
+			printf("%d", p->proc->requests[i]);
+		printf("\n");
 		p->device = IO_DEVICE;
 		all_pcbs[proc_id] = p;
+		printf("in all pcbs index %d, it looks like this:\n", proc_id);
+		for (int i = 0; i < all_pcbs[proc_id]->proc->no_steps; i++)
+			printf("%d", all_pcbs[proc_id]->proc->requests[i]);
+		printf("\n");
 		proc_id++;
 	}
 
 	current_pcb = all_pcbs[0];
 	current_process = current_pcb->proc;
 
+	for (int i = 0; i < num_processes; i++)
+	{
+		printf("process %d looks like this:\n", i);
+				printf("%d\n", all_pcbs[i]->proc->no_steps);
+				for (int j = 0; j < all_pcbs[i]->proc->no_steps; j++)
+					printf("%d ", all_pcbs[i]->proc->requests[j]);
+				printf("\n");
+	}
 	int run_scheduler = 0;
 
 	pthread_mutexattr_t default_mutex_attr;
@@ -192,13 +244,16 @@ int main(int argc, char * argv[])
 
 	// Set up keyboard input for zero delay
 	// Code blatantly copied from google because terminal stuff is black magic
-	//struct termios info;
-	//	tcgetattr(0, &info);          /* get current terminal attirbutes; 0 is the file descriptor for stdin*/
-	//	info.c_lflag &= ~ICANON;      /* disable canonical mode*/
-	//	info.c_cc[VMIN] = 1;          /* wait until at least one keystroke available*/
-	//	info.c_cc[VTIME] = 0;         /* no timeout*/
-	//	tcsetattr(0, TCSANOW, &info); /* set immediately*/
+	struct termios info;
+		tcgetattr(0, &info);          /* get current terminal attirbutes; 0 is the file descriptor for stdin*/
+		info.c_lflag &= ~ICANON;      /* disable canonical mode*/
+		info.c_cc[VMIN] = 1;          /* wait until at least one keystroke available*/
+		info.c_cc[VTIME] = 0;         /* no timeout*/
+		tcsetattr(0, TCSANOW, &info); /* set immediately*/
 	// end copy paste job
+
+	// Auto-flush output buffer, too
+		setbuf(stdout, NULL);
 
 	// Start up our devices.
 	printf("Creating timer pthread\n");
@@ -208,10 +263,10 @@ int main(int argc, char * argv[])
 	printf("OK, created some threads...\n");
 
 	// Initialize blocked-process queue for devices
-	queue process_blocked_on_devices[num_devices];
+	queue process_blocked_on_devices[2];
 	for (i = 0; i < num_devices; i++)
 	{
-		buildQueue(BLOCK_QUEUE_LENGTH, process_blocked_on_devices[i]);
+		buildQueue(BLOCK_QUEUE_LENGTH, &process_blocked_on_devices[i]);
 	}
 	printf("OK, created the device blocking queue\n");
 
@@ -221,7 +276,7 @@ int main(int argc, char * argv[])
 	for (i = 0; i < num_mutexes; i++)
 	{
 		mutexes[i] = NOBODY_HOLDS_MUTEX;
-		buildQueue(BLOCK_QUEUE_LENGTH, processes_blocked_on_mutexes[i]);
+		buildQueue(BLOCK_QUEUE_LENGTH, &processes_blocked_on_mutexes[i]);
 	}
 	printf("OK, created the mutex blocking queue\n");
 
@@ -231,21 +286,24 @@ int main(int argc, char * argv[])
 	for (i = 0; i < num_mem_locs; i++)
 	{
 		shared_mem[i] = 0;	// all shared memory will start at zero
-		buildQueue(BLOCK_QUEUE_LENGTH, processes_blocked_on_shared_mem[i]);
+		buildQueue(BLOCK_QUEUE_LENGTH, &processes_blocked_on_shared_mem[i]);
 	}
 	printf("OK, created the shared memory\n");
 
+	global_interrupt_state = 0;
+	current_pcb = all_pcbs[0];
+	current_pcb->state = RUNNING;
 	while (TRUE) {
-		printf("got to the first step\n");
-		usleep(100000); // Run 10 steps/second, slowed down enough to be capable of human comprehension
-		printf("whoop whoop\n");
+
+		 // Run 10 steps/second, slowed down enough to be capable of human comprehension
 		// sources of interrupts: timer, I/O devices, system calls
 
 		while (global_interrupt_state == 0 && current_pcb->state == RUNNING) {
-
+			printf(".");
+			usleep(10000);
+			current_process = current_pcb->proc;
 			// read instruction
 			int instruction = current_process->requests[current_pcb->next_step];
-			// int argument = current_process->requests[current_pcb->next_step + 1];
 
 			// switch statement that determines what to do based on instruction in pc
 			switch(instruction)
@@ -253,8 +311,12 @@ int main(int argc, char * argv[])
 			case INSTRUCTION_OUTPUT:	// aka "system call"
 				// We're blocked waiting for the output operation to finish:
 				current_pcb->state = BLOCKED;
+				printf("Thread %d is waiting for device %d", current_pcb->pid, current_pcb->device);
 				// We need to add ourselves to the queue for the device:
-				addToEnd(process_blocked_on_devices[current_pcb->device], current_pcb->pid);
+				addToEnd(&process_blocked_on_devices[current_pcb->device], current_pcb->pid);
+				printf("last item in the queue is %d, we are %d",
+						process_blocked_on_devices[current_pcb->device].data[process_blocked_on_devices[current_pcb->device].position],
+						current_pcb->pid);
 				// If we're not waiting on a keyboard input, then fire up a one-shot thread that will
 				// fire an interrupt back after a short time.
 				if (current_pcb->device != KB_DEVICE)
@@ -271,20 +333,22 @@ int main(int argc, char * argv[])
 				else
 				{
 					current_pcb->state = BLOCKED;
-					addToEnd(processes_blocked_on_mutexes[current_pcb->mutex], current_pcb->pid);
+					addToEnd(&processes_blocked_on_mutexes[current_pcb->mutex], current_pcb->pid);
 				}
 				break;
 			case INSTRUCTION_MUTEX_UNLOCK:
 				if (mutexes[current_pcb->mutex] == current_pcb->pid)
 				{
 					mutexes[current_pcb->mutex] = NOBODY_HOLDS_MUTEX;
+					printf("Process %d gave up mutex %d\n", current_pcb->pid, current_pcb->mutex);
 					// If anybody's waiting on this:
 					if (processes_blocked_on_mutexes[current_pcb->mutex].position >= 0)
 					{
 						// find out who they are
-						int waiting_process = getFirstItem(processes_blocked_on_mutexes[current_pcb->mutex]);
+						int waiting_process = getFirstItem(&processes_blocked_on_mutexes[current_pcb->mutex]);
+						printf("Process %d was waiting on that, so we woke it up.\n", waiting_process);
 						// and wake them up...
-						all_pcbs[waiting_process]->state = RUNNING;
+						all_pcbs[waiting_process]->state = READY;
 					}
 				}
 				// If we hold the mutex:
@@ -297,9 +361,9 @@ int main(int argc, char * argv[])
 				//   Notify first process in wait queue
 				if (shared_mem[current_pcb->mem_loc] == 0)
 				{
-					int waiting_process = getFirstItem(processes_blocked_on_shared_mem[current_pcb->mem_loc]);
+					int waiting_process = getFirstItem(&processes_blocked_on_shared_mem[current_pcb->mem_loc]);
 					// and wake them up...
-					all_pcbs[waiting_process]->state = RUNNING;
+					all_pcbs[waiting_process]->state = READY;
 				}
 				// Actually increment the memory location
 				shared_mem[current_pcb->mem_loc]++;
@@ -312,7 +376,7 @@ int main(int argc, char * argv[])
 				if (shared_mem[current_pcb->mem_loc] == 0)
 				{
 					current_pcb->state = BLOCKED;
-					addToEnd(processes_blocked_on_shared_mem[current_pcb->mem_loc], current_pcb->pid);
+					addToEnd(&processes_blocked_on_shared_mem[current_pcb->mem_loc], current_pcb->pid);
 				}
 				else
 				{
@@ -355,10 +419,11 @@ int main(int argc, char * argv[])
 			// Wake up the next process waiting on the keyboard
 			if (process_blocked_on_devices[0].position != -1)
 			{
-				int waiting_process = getFirstItem(process_blocked_on_devices[0]);
+				int waiting_process = getFirstItem(&process_blocked_on_devices[0]);
 				// and wake it up... (note that we aren't immediately running the scheduler, it just is
 				// eligible to be scheduled!)
-				all_pcbs[waiting_process]->state = RUNNING;
+				printf("Woke up thread %d from its keyboard waiting slumber.\n", waiting_process);
+				all_pcbs[waiting_process]->state = READY;
 			}
 		}
 
@@ -368,9 +433,18 @@ int main(int argc, char * argv[])
 			global_interrupt_state -= IO_INTERRUPT;
 			printf("IO device interrupt received!\n");
 			// Find the next process waiting on the IO device
-			int waiting_process = getFirstItem(process_blocked_on_devices[1]);
-			// and wake it up...
-			all_pcbs[waiting_process]->state = RUNNING;
+			if (process_blocked_on_devices[1].position >= 0)
+			{
+				int waiting_process = getFirstItem(&process_blocked_on_devices[1]);
+				// and wake it up...
+				all_pcbs[waiting_process]->state = READY;
+				printf("Just woke %d from waiting on virtual IO device\n", waiting_process);
+			}
+			else
+			{
+				printf("That's weird... received an unrequested interrupt from our virtual IO device.\n");
+				printf("Since it only speaks after it's spoken to, this shouldn't ever happen.\n");
+			}
 		}
 
 		// See if we need to run the scheduler - either we just blocked on some system call,
@@ -378,8 +452,21 @@ int main(int argc, char * argv[])
 		if (run_scheduler || current_pcb->state == BLOCKED)
 		{
 			run_scheduler = FALSE;
-			pcb_to_run = * all_pcbs[scheduler(scheduler_choice, all_pcbs, num_processes, current_pcb->pid)];
+			// If we're running, go to a ready state (if we're blocked, keep it that way)
+			if (current_pcb->state == RUNNING)
+				current_pcb->state = READY;
 
+			// Figure out what new process we want to run
+			int new_process_to_run = scheduler(scheduler_choice, all_pcbs, num_processes, current_pcb->pid);
+			printf("Scheduler switching from %d to %d\n", current_pcb->pid, new_process_to_run);
+
+			// Actually do the switch
+			current_pcb = all_pcbs[new_process_to_run];
+			current_pcb->state = RUNNING;
+			printf("Here's what the new process looks like:\n");
+			for (int i = 0; i < current_pcb->proc->no_steps; i++)
+				printf("%d", current_pcb->proc->requests[i]);
+			printf("\n");
 		}
 		pthread_mutex_unlock(&interrupt_mutex);
 	}
@@ -397,8 +484,11 @@ void get_input()
 		printf("\n Please enter total number of I/O bound processes to run: ");
 		scanf("%d", &num_io_processes);
 		FLUSH;
-		printf("\n Please enter total number of p/c processes to run: ");
+		printf("\n Please enter total number of p/c process pairs to run: ");
 		scanf("%d", &num_pc_processes);
+		FLUSH;
+		printf("\n Please enter the number of compute processes to run: ");
+		scanf("%d", &num_compute_processes);
 		FLUSH;
 
 		printf("\n Please select the scheduling algorithm to use: ");
@@ -417,7 +507,7 @@ void timer_interrupt()
 	while(global_run_state == TRUE)
 	{
 
-		usleep(5000000);	// 5 seconds
+		usleep(500000);	// 5 seconds
 		pthread_mutex_lock(&interrupt_mutex);
 		if (!(global_interrupt_state & TIMER_INTERRUPT))
 			global_interrupt_state += TIMER_INTERRUPT;
@@ -445,9 +535,11 @@ void kb_interrupt()
 // we need to wait for an i/o interrupt.
 void io_interrupt()
 {
-	usleep(1000000);	// 1 second
+	printf("Just hit an IO interrupt\n");
+	usleep(100000);	// 1 second
 	pthread_mutex_lock(&interrupt_mutex);
 	if (!(global_interrupt_state & IO_INTERRUPT))
 		global_interrupt_state += IO_INTERRUPT;
 	pthread_mutex_unlock(&interrupt_mutex);
+	printf("IO interrupt just fired back\n");
 }

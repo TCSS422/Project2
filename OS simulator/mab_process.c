@@ -6,7 +6,7 @@
  */
 
 #include <stdlib.h>
-
+#include <stdio.h>
 #include "mab_process.h"
 
 #define HI_PRIORITY  3
@@ -30,19 +30,19 @@ PCBStr * make_process(int proc_id, int type) {
 	proc = malloc(sizeof(ProcessStr));
 	p->proc = proc;
 	proc->proc_type = type;
-	proc->no_steps = rand() % NUM_INSTRUCTIONS; // random number of steps within range
-	proc->no_requests = NUM_INSTRUCTIONS;
-	r = malloc(sizeof(NUM_INSTRUCTIONS));
+	proc->no_steps = NUM_INSTRUCTIONS;
+	proc->no_requests = NUM_REQUESTS;
+	r = malloc(sizeof(int) * NUM_INSTRUCTIONS);
 	proc->requests = r;
 	init_array(r);
 
+	steps = proc->no_steps;
 	// complete initialization per process type
 	switch (type)
 	{
-		steps = proc->no_steps;
+
 		case COMPUTE:
 			p->priority = LO_PRIORITY;
-			add_io_system_calls(r, steps);
 			break;
 		case IO:
 			p->priority = HI_PRIORITY;
@@ -63,6 +63,9 @@ PCBStr * make_process(int proc_id, int type) {
 		default:
 			break;
 	}
+	for (int i = 0; i < p->proc->no_steps; i++)
+		printf("%d", p->proc->requests[i]);
+	printf("\n");
 	return p;
 }
 
@@ -71,22 +74,24 @@ void init_array(int * a) {
 	int i;
 	for (i = 0; i < NUM_INSTRUCTIONS; i++) {
 		a[i] = INSTRUCTION_NOP;
+		//printf("nop\n");
 	}
 }
 
 // for number of steps, place instructions randomly
 void add_io_system_calls(int * a, int steps) {
 	int i;
-	for (i = 0; i < steps; i++) {
-		a[rand() % NUM_INSTRUCTIONS] = INSTRUCTION_OUTPUT;
+	for (i = 0; i < NUM_REQUESTS; i++)
+	{
+		a[rand() % steps] = INSTRUCTION_OUTPUT;
 	}
 }
 
 // for number of steps place instructions randomly
 void add_pc_system_calls(int * a, int steps, int type) {
 	int i, random;
-	for (i = 0; i < steps; i++) {
-		random = rand() % NUM_INSTRUCTIONS;
+	for (i = 0; i < NUM_REQUESTS; i++) {
+		random = rand() % steps;
 		if (a[random] == INSTRUCTION_NOP) {
 			if (type == PRODUCER) {
 				a[random] = INSTRUCTION_INC_SHARED_MEM;

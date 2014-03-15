@@ -13,7 +13,7 @@
 // these functions are of no concern to an outside caller
 int PriorityScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process);
 int RoundRobinScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process);
-int LotteryScheduler(int num_processes);
+int LotteryScheduler(PCBStr ** all_pcbs, int num_processes);
 
 // use variable to call function specific to policy
 int scheduler(int sched_policy, PCBStr ** all_pcbs, int num_processes, int curr_process)
@@ -24,7 +24,7 @@ int scheduler(int sched_policy, PCBStr ** all_pcbs, int num_processes, int curr_
 		return RoundRobinScheduler(all_pcbs, num_processes, curr_process);
 		break;
 	case 2:
-		return LotteryScheduler(num_processes);
+		return LotteryScheduler(all_pcbs, num_processes);
 		break;
 	case 3:
 		return PriorityScheduler(all_pcbs, num_processes, curr_process);
@@ -66,7 +66,8 @@ int RoundRobinScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process)
 	if (head > tail) {
 		head = front;
 	}
-	// if nothing else, calculator process will always be READY
+	// we know that since there is at least one do-nothing process, there will
+	// always be at least one that is READY
 	while (all_pcbs[head] -> state != READY) {
 		head++;
 		if (head > tail) {
@@ -77,8 +78,11 @@ int RoundRobinScheduler(PCBStr ** all_pcbs, int num_processes, int curr_process)
 }
 
 // simply return a random
-int LotteryScheduler(int num_processes)
+int LotteryScheduler(PCBStr ** all_pcbs, int num_processes)
 {
 	// this seems too easy, but for simulation we'll take it
-	return rand() % num_processes - 1;
+	int chosen_process = rand() % num_processes;
+	while (all_pcbs[chosen_process]->state == BLOCKED)
+		chosen_process = rand() % num_processes;
+	return chosen_process;
 }
