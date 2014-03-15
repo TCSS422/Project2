@@ -330,7 +330,7 @@ int main(int argc, char * argv[])
 				//	 Decrement and continue
 				if (shared_mem[current_pcb->mem_loc] == 0)
 				{
-					printf("Process %d blocked on shared mem location %d", current_pcb->pid, current_pcb->mem_loc);
+					printf("Process %d blocked on shared mem location %d\n", current_pcb->pid, current_pcb->mem_loc);
 					current_pcb->state = BLOCKED;
 					addToEnd(&processes_blocked_on_shared_mem[current_pcb->mem_loc], current_pcb->pid);
 				}
@@ -371,7 +371,7 @@ int main(int argc, char * argv[])
 		if (global_interrupt_state & KEYBOARD_INTERRUPT)
 		{
 			global_interrupt_state -= KEYBOARD_INTERRUPT;
-			printf("Keyboard interrupt received!\n");
+			printf("\nKeyboard interrupt received!\n");
 			// Wake up the next process waiting on the keyboard
 			if (process_blocked_on_devices[0].position != -1)
 			{
@@ -407,7 +407,7 @@ int main(int argc, char * argv[])
 		// or we hit the timer interrupt.
 		if (run_scheduler || current_pcb->state == BLOCKED)
 		{
-			printf("Running scheduler\n");
+			printf("\nRunning scheduler\n");
 			for (int i = 0; i < num_processes; i++)
 			{
 				printf("Process %d ", i);
@@ -471,7 +471,6 @@ void get_input()
 	int i = 0;
 	while(i == 0)
 	{
-		FLUSH;
 		printf("\n Please enter total number of keyboard processes to run: ");
 		scanf("%d", &num_keyboard_processes);
 		FLUSH;
@@ -484,7 +483,6 @@ void get_input()
 		printf("\n Please enter the number of compute processes to run: ");
 		scanf("%d", &num_compute_processes);
 		FLUSH;
-
 		printf("\n Please select the scheduling algorithm to use: ");
 		printf("\n 1. Round Robin");
 		printf("\n 2. Lottery");
@@ -517,7 +515,6 @@ void timer_interrupt()
 		if (!(global_interrupt_state & TIMER_INTERRUPT))
 			global_interrupt_state += TIMER_INTERRUPT;
 		pthread_mutex_unlock(&interrupt_mutex);
-		printf("TICK TOCK my gentle friend\n");
 	}
 }
 
@@ -533,7 +530,6 @@ void kb_interrupt()
 		if (!(global_interrupt_state & KEYBOARD_INTERRUPT))
 			global_interrupt_state += KEYBOARD_INTERRUPT;
 		pthread_mutex_unlock(&interrupt_mutex);
-		printf("WHY YOU GOTTA TYPE LIKE THAT?\n");
 	}
 }
 
@@ -547,5 +543,4 @@ void io_interrupt()
 	if (!(global_interrupt_state & IO_INTERRUPT))
 		global_interrupt_state += IO_INTERRUPT;
 	pthread_mutex_unlock(&interrupt_mutex);
-	printf("IO interrupt just fired back\n");
 }
